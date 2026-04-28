@@ -1,0 +1,42 @@
+# Gradle and build output
+.gradle/
+build/
+**/build/
+captures/
+outputs/
+
+# Local Android SDK config
+local.properties
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.kotlin/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Signing keys and secrets
+*.jks
+*.keystore
+*.p12
+*.pem
+*.der
+keystore.properties
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Generated artifacts
+*.apk
+*.aab
+*.ap_
+
+# Reference assets kept locally
+app_icon.png

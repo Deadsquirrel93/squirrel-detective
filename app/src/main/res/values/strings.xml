@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Squirrel Detective</string>
+
+    <!-- Welcome / mode selection -->
+    <string name="welcome_title">Squirrel Detective</string>
+    <string name="welcome_subtitle">Local audit of installed apps. No network access, no analytics.</string>
+    <string name="mode_full_scan_title">Scan all apps</string>
+    <string name="mode_full_scan_body">Inspect every installed app and surface those with risky permission combinations.</string>
+    <string name="include_system_apps">Include system apps</string>
+    <string name="include_system_apps_hint">System apps are pre-installed by the device vendor and usually cannot be uninstalled.</string>
+    <string name="start_scan">Start scan</string>
+    <string name="mode_single_app_title">Scan a specific app</string>
+    <string name="mode_single_app_body">Pick one installed app and review its permissions, receivers, and risk signals.</string>
+    <string name="choose_app">Choose app</string>
+    <string name="open_settings">Settings</string>
+
+    <!-- Picker -->
+    <string name="picker_title">Choose an app</string>
+    <string name="picker_search_hint">Search by app or package name</string>
+    <string name="picker_show_system">Show system apps</string>
+    <string name="picker_no_results">No matching apps</string>
+    <string name="picker_loading">Loading installed apps…</string>
+
+    <!-- Main / results -->
+    <string name="results_title">Scan results</string>
+    <string name="results_subtitle_count">%1$d apps with findings</string>
+    <string name="results_scanning_progress">Scanning %1$d / %2$d</string>
+    <string name="results_scanning">Scanning…</string>
+    <string name="results_preparing">Preparing scan…</string>
+    <string name="results_changes_banner">%1$d apps changed since the last scan</string>
+    <string name="results_empty_risky">No suspicious apps found</string>
+    <string name="results_safe_section">Safe apps (%1$d)</string>
+    <string name="results_rescan">Rescan</string>
+    <string name="results_back">Back</string>
+
+    <!-- Filters -->
+    <string name="filter_all">All</string>
+    <string name="filter_red">High</string>
+    <string name="filter_yellow">Medium</string>
+    <string name="filter_green">Expected</string>
+
+    <!-- Risk badges -->
+    <string name="risk_red">HIGH</string>
+    <string name="risk_yellow">MEDIUM</string>
+    <string name="risk_green">EXPECTED</string>
+    <string name="risk_safe">SAFE</string>
+
+    <!-- Detail -->
+    <string name="detail_title_fallback">Details</string>
+    <string name="detail_section_findings">What we found</string>
+    <string name="detail_section_permissions">All permissions (%1$d)</string>
+    <string name="detail_section_receivers">Package broadcast receivers</string>
+    <string name="detail_version_label">version %1$s</string>
+    <string name="detail_installer_label">installed via: %1$s</string>
+    <string name="detail_system_app">System app</string>
+    <string name="detail_short_default">No suspicious activity detected</string>
+    <string name="detail_open_in_system_settings">Open in system settings</string>
+    <string name="detail_open_in_system_settings_failed">Could not open system settings for this app</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="language_title">Language</string>
+    <string name="language_body">Choose the app language. Russian is enabled by default.</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+    <string name="about_title">About Squirrel Detective</string>
+    <string name="about_body">Squirrel Detective is a fully offline Android auditor. It enumerates installed packages locally and highlights apps that may silently scan or report on others. No network calls, no analytics.</string>
+
+    <!-- Threat reasons -->
+    <string name="threat_query_all_internet_short">Sees every app and has internet access</string>
+    <string name="threat_query_all_internet_full">The app declared QUERY_ALL_PACKAGES, which lets it enumerate every installed package, and it also has network access. This combination allows silently sending the list of your apps to a remote server.</string>
+    <string name="threat_query_all_short">Can see the full list of installed apps</string>
+    <string name="threat_query_all_full">QUERY_ALL_PACKAGES bypasses the Android 11+ visibility filter and lets the app see every installed package.</string>
+    <string name="threat_read_logs_internet_short">Reads system logs and has internet</string>
+    <string name="threat_read_logs_short">Reads system logs (sees app launches)</string>
+    <string name="threat_read_logs_full">READ_LOGS exposes logcat, which can reveal which apps run, what intents are dispatched, and various debug data. Apps on non-rooted devices typically should not require it.</string>
+    <string name="threat_package_usage_short">Tracks app usage history</string>
+    <string name="threat_package_usage_full">PACKAGE_USAGE_STATS reveals which apps you opened and for how long. Used by parental control and digital wellbeing tools, but also for surveillance.</string>
+    <string name="threat_install_packages_short">Can install other apps</string>
+    <string name="threat_install_packages_full">REQUEST_INSTALL_PACKAGES lets the app install APK files outside Google Play. Legitimate for alternative stores but risky elsewhere — can deliver adware or malicious APKs.</string>
+    <string name="threat_get_accounts_short">Sees the device account list</string>
+    <string name="threat_get_accounts_full">GET_ACCOUNTS returns the list of accounts (Google, mail, etc). Together with internet access, it can be used for de-anonymization.</string>
+    <string name="threat_accessibility_short">Requests an Accessibility service</string>
+    <string name="threat_accessibility_full">An Accessibility service can read the contents of any screen and emulate gestures. This is the most powerful surveillance channel on Android — grant it only to trusted apps.</string>
+    <string name="threat_receiver_added_short">Reacts to new app installs</string>
+    <string name="threat_receiver_added_full">A receiver for ACTION_PACKAGE_ADDED is declared in the manifest. The app gets notified every time you install something.</string>
+    <string name="threat_receiver_removed_short">Reacts to app removals</string>
+    <string name="threat_receiver_removed_full">A receiver for ACTION_PACKAGE_REMOVED is declared in the manifest — the app knows when other packages are uninstalled.</string>
+    <string name="threat_receiver_boot_short">Scans packages right after device boot</string>
+    <string name="threat_receiver_boot_full">The app listens to BOOT_COMPLETED and also has permissions to read the package list or usage history. This is a typical signal of automatic scanning every time the phone is turned on.</string>
+
+    <string name="threat_overlay_short">Can draw over other apps</string>
+    <string name="threat_overlay_full">SYSTEM_ALERT_WINDOW lets the app render UI on top of any other app — used for legitimate floating widgets, but also for tap-jacking and phishing overlays.</string>
+    <string name="threat_record_audio_internet_short">Microphone access combined with internet</string>
+    <string name="threat_record_audio_internet_full">RECORD_AUDIO with INTERNET means the app can capture audio and send it to a remote server. Required by voice messengers, but suspicious otherwise.</string>
+    <string name="threat_camera_internet_short">Camera access combined with internet</string>
+    <string name="threat_camera_internet_full">CAMERA with INTERNET means photos and video can be captured and uploaded silently.</string>
+    <string name="threat_sms_short">Reads or receives SMS</string>
+    <string name="threat_sms_full">SMS access lets the app intercept verification codes and personal messages. Modern Android only allows this for the default SMS app — otherwise it is a strong red flag.</string>
+    <string name="threat_contacts_internet_short">Reads contacts and has internet</string>
+    <string name="threat_contacts_internet_full">READ_CONTACTS with INTERNET allows the contact book to be uploaded silently.</string>
+    <string name="threat_call_log_short">Reads the call log</string>
+    <string name="threat_call_log_full">READ_CALL_LOG / WRITE_CALL_LOG let the app see who you call and when. Restricted to dialer apps in modern Android — otherwise suspicious.</string>
+    <string name="threat_phone_state_short">Reads phone state and identifiers</string>
+    <string name="threat_phone_state_full">READ_PHONE_STATE / READ_PHONE_NUMBERS expose IMEI, SIM serial, line numbers — used for fingerprinting devices.</string>
+    <string name="threat_location_internet_short">Background location with internet</string>
+    <string name="threat_location_internet_full">ACCESS_FINE_LOCATION or ACCESS_BACKGROUND_LOCATION with internet access lets the app track your movements continuously.</string>
+    <string name="threat_device_admin_short">Requests Device Admin powers</string>
+    <string name="threat_device_admin_full">BIND_DEVICE_ADMIN can lock the screen, force-set passwords, and on older Androids even wipe the device. Legitimate for MDM only.</string>
+    <string name="threat_notifications_short">Reads all notifications</string>
+    <string name="threat_notifications_full">BIND_NOTIFICATION_LISTENER_SERVICE exposes every notification, including sensitive ones from banking and messengers.</string>
+    <string name="threat_vpn_short">Acts as a VPN</string>
+    <string name="threat_vpn_full">BIND_VPN_SERVICE routes the device traffic through this app — it can inspect or modify everything you send.</string>
+    <string name="threat_input_method_short">Acts as a keyboard</string>
+    <string name="threat_input_method_full">BIND_INPUT_METHOD lets the app capture every key you type. Only install keyboards from trusted sources.</string>
+    <string name="threat_external_storage_short">Full file system access</string>
+    <string name="threat_external_storage_full">MANAGE_EXTERNAL_STORAGE grants read/write access to the entire shared storage — including private app folders on older Android.</string>
+    <string name="threat_write_settings_short">Modifies system settings</string>
+    <string name="threat_write_settings_full">WRITE_SECURE_SETTINGS / WRITE_SETTINGS allow changing system-wide configuration including security flags.</string>
+    <string name="threat_get_tasks_short">Inspects running tasks</string>
+    <string name="threat_get_tasks_full">GET_TASKS / REAL_GET_TASKS reveal which apps are running. Deprecated, allowed only for system apps — flagged for non-system declarations.</string>
+    <string name="threat_unknown_installer_short">Installed from an unknown source</string>
+    <string name="threat_unknown_installer_full">The app was sideloaded (no installer package or unknown installer) and combines several risky permissions. Sideloaded apps with broad access deserve manual review.</string>
+    <string name="threat_debuggable_short">App is marked debuggable</string>
+    <string name="threat_debuggable_full">The app ships with android:debuggable=true. Production apps should not be debuggable — a debugger can inspect memory and inject code.</string>
+    <string name="threat_old_target_sdk_short">Targets an outdated Android version</string>
+    <string name="threat_old_target_sdk_full">The app targets an old SDK level (below API 23). On modern Android this skips the runtime permission model — all dangerous permissions are granted on install without prompt.</string>
+    <string name="threat_no_launcher_short">Hidden app — no launcher icon</string>
+    <string name="threat_no_launcher_full">The app does not declare a launcher activity, so it has no icon in the app drawer. Combined with sensitive permissions this is a typical pattern for stalkerware.</string>
+
+    <!-- Wiki -->
+    <string name="wiki_title">Permission wiki</string>
+    <string name="wiki_card_title">Permission wiki</string>
+    <string name="wiki_card_body">Plain-language reference for what each Android permission actually grants. No need to google.</string>
+    <string name="wiki_open">Open wiki</string>
+    <string name="wiki_intro">A short, human reference for what each Android permission allows. Tap a category to expand.</string>
+
+    <string name="wiki_category_visibility">Observation &amp; monitoring</string>
+    <string name="wiki_category_services">Powerful service binds</string>
+    <string name="wiki_category_sensors">Sensors</string>
+    <string name="wiki_category_communication">Communication &amp; identity</string>
+    <string name="wiki_category_location">Location</string>
+    <string name="wiki_category_storage">Storage</string>
+    <string name="wiki_category_system">System &amp; install</string>
+
+    <string name="wiki_internet_title">INTERNET</string>
+    <string name="wiki_internet_body">Lets the app open network connections. Almost universal — but combined with permissions that read your data (contacts, files, location, package list) it is what allows that data to leave the device.</string>
+
+    <string name="wiki_query_all_title">QUERY_ALL_PACKAGES</string>
+    <string name="wiki_query_all_body">Bypasses the Android 11+ package visibility filter and reveals every installed app on the device. Legitimate for launchers, stores, antivirus and file managers — suspicious anywhere else, especially with INTERNET.</string>
+
+    <string name="wiki_usage_stats_title">PACKAGE_USAGE_STATS</string>
+    <string name="wiki_usage_stats_body">Shows which apps you opened, when, and for how long. Used by digital wellbeing, parental control and stat trackers — also a common stalkerware signal. Must be granted manually in system settings.</string>
+
+    <string name="wiki_read_logs_title">READ_LOGS</string>
+    <string name="wiki_read_logs_body">Reads the system logcat, where every app prints debug info, intents and crashes. On non-rooted devices Android only grants this to system or developer-mode apps. Anywhere else it is a strong red flag.</string>
+
+    <string name="wiki_get_tasks_title">GET_TASKS / REAL_GET_TASKS</string>
+    <string name="wiki_get_tasks_body">Lists currently running tasks and recent activities. Deprecated since Android 5 and reserved for system apps — third-party apps that still declare it look outdated or invasive.</string>
+
+    <string name="wiki_accessibility_title">BIND_ACCESSIBILITY_SERVICE</string>
+    <string name="wiki_accessibility_body">Lets the app read every screen, every text field, and emulate taps and gestures. The most powerful surveillance channel on Android. Grant it only to tools you fully trust (screen readers, password managers).</string>
+
+    <string name="wiki_device_admin_title">BIND_DEVICE_ADMIN</string>
+    <string name="wiki_device_admin_body">Device-administrator access can lock the screen, force a password policy, disable the camera and on older Android even wipe the device. Legitimate only for MDM and corporate device management.</string>
+
+    <string name="wiki_notif_listener_title">BIND_NOTIFICATION_LISTENER_SERVICE</string>
+    <string name="wiki_notif_listener_body">Reads every notification posted by every app, including SMS codes, banking alerts and chat previews. Legitimate for smartwatches and notification managers; everywhere else it is a high-risk capability.</string>
+
+    <string name="wiki_vpn_title">BIND_VPN_SERVICE</string>
+    <string name="wiki_vpn_body">Routes the entire device traffic through this app. A malicious or sloppy VPN can inspect, log or modify everything you send. Use only well-known providers.</string>
+
+    <string name="wiki_input_method_title">BIND_INPUT_METHOD</string>
+    <string name="wiki_input_method_body">Lets the app act as a system keyboard, which means it sees every key you type — including passwords. Install only well-known keyboards.</string>
+
+    <string name="wiki_overlay_title">SYSTEM_ALERT_WINDOW</string>
+    <string name="wiki_overlay_body">Draws UI on top of every other app. Useful for chat heads and floating widgets — also used for tap-jacking attacks and phishing overlays.</string>
+
+    <string name="wiki_camera_title">CAMERA</string>
+    <string name="wiki_camera_body">Direct access to the device cameras. Combined with INTERNET it allows photos and video to be uploaded silently. Legitimate camera, video chat and AR apps need it; granted at runtime.</string>
+
+    <string name="wiki_record_audio_title">RECORD_AUDIO</string>
+    <string name="wiki_record_audio_body">Direct microphone access. With INTERNET it can be used to capture and upload audio. Legitimate for voice messengers, recorders and assistants. Android 12+ shows a status-bar dot whenever the mic is active.</string>
+
+    <string name="wiki_sms_title">READ_SMS / RECEIVE_SMS / SEND_SMS</string>
+    <string name="wiki_sms_body">Reads or intercepts SMS messages, including verification codes. Modern Android only gives the full set to the default SMS app — anywhere else this is a serious warning.</string>
+
+    <string name="wiki_contacts_title">READ_CONTACTS / WRITE_CONTACTS</string>
+    <string name="wiki_contacts_body">Reads or modifies your address book. With INTERNET the contact list can be uploaded silently — a classic data-collection pattern.</string>
+
+    <string name="wiki_call_log_title">READ_CALL_LOG / WRITE_CALL_LOG</string>
+    <string name="wiki_call_log_body">Reads or modifies the call history. Restricted to dialer / default phone apps in modern Android. Anywhere else it is suspicious.</string>
+
+    <string name="wiki_phone_state_title">READ_PHONE_STATE / READ_PHONE_NUMBERS</string>
+    <string name="wiki_phone_state_body">Exposes IMEI, SIM serial and the line phone number — used for fingerprinting and de-anonymisation across app reinstalls.</string>
+
+    <string name="wiki_location_title">ACCESS_FINE_LOCATION / ACCESS_COARSE_LOCATION</string>
+    <string name="wiki_location_body">FINE gives precise GPS coordinates, COARSE gives city-block accuracy. Required by maps, navigation and weather apps. With INTERNET they enable continuous tracking.</string>
+
+    <string name="wiki_bg_location_title">ACCESS_BACKGROUND_LOCATION</string>
+    <string name="wiki_bg_location_body">Continues reading location while the app is in the background. Granted in a separate consent screen — only sensible for navigation, fitness and family-tracking apps.</string>
+
+    <string name="wiki_manage_storage_title">MANAGE_EXTERNAL_STORAGE</string>
+    <string name="wiki_manage_storage_body">Read and write the entire shared storage and most app folders. A power-user permission for file managers, backup tools and archivers; risky elsewhere.</string>
+
+    <string name="wiki_storage_title">READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE</string>
+    <string name="wiki_storage_body">Legacy permissions to read or write the public storage (Photos, Downloads, Music). Replaced on Android 13+ by scoped photo / video / audio permissions.</string>
+
+    <string name="wiki_install_packages_title">REQUEST_INSTALL_PACKAGES</string>
+    <string name="wiki_install_packages_body">Lets the app install APK files outside Google Play. Required by alternative stores and updaters. Risky in random apps — can deliver adware or malicious updates.</string>
+
+    <string name="wiki_get_accounts_title">GET_ACCOUNTS</string>
+    <string name="wiki_get_accounts_body">Lists accounts registered on the device (Google, mail, messengers). Together with INTERNET it can be used to identify the user across apps.</string>
+
+    <string name="wiki_write_settings_title">WRITE_SETTINGS / WRITE_SECURE_SETTINGS</string>
+    <string name="wiki_write_settings_body">Modifies system settings; the SECURE variant can change security-relevant flags. The secure form is reserved for system apps — its presence in a third-party app is a major warning.</string>
+
+    <string name="wiki_post_notifications_title">POST_NOTIFICATIONS</string>
+    <string name="wiki_post_notifications_body">Required since Android 13 to show any notifications. Routine for chat, news and email apps — not sensitive on its own.</string>
+
+    <string name="wiki_boot_title">RECEIVE_BOOT_COMPLETED</string>
+    <string name="wiki_boot_body">Lets the app start automatically after the device reboots. Routine for messengers and alarms; combined with package-list or usage-stats access it is a typical sign of background scanning.</string>
+
+    <string name="wiki_foreground_service_title">FOREGROUND_SERVICE</string>
+    <string name="wiki_foreground_service_body">Allows long-running background work with a persistent notification — used for music players, navigation, fitness tracking and file uploads. Required by Android, not dangerous on its own.</string>
+
+    <string name="wiki_wake_lock_title">WAKE_LOCK</string>
+    <string name="wiki_wake_lock_body">Keeps the CPU or screen awake. Used by media players, alarms and downloads. Battery-relevant but not a privacy concern.</string>
+
+    <!-- Whitelist -->
+    <string name="whitelist_launcher_short">Launcher — package list access expected</string>
+    <string name="whitelist_launcher_full">This is a launcher. It must enumerate installed apps to draw the home screen, so QUERY_ALL_PACKAGES is normal in this context.</string>
+    <string name="whitelist_store_short">App store — package access expected</string>
+    <string name="whitelist_store_full">This is an app store. Managing installs and updates is its core function, so it has the corresponding permissions.</string>
+    <string name="whitelist_file_manager_short">File manager — access expected</string>
+    <string name="whitelist_file_manager_full">File managers list APK files and let you install them, so they need package visibility.</string>
+    <string name="whitelist_antivirus_short">Antivirus — access expected</string>
+    <string name="whitelist_antivirus_full">Antivirus apps scan every installed package — this is their primary function.</string>
+    <string name="whitelist_system_short">System tool</string>
+    <string name="whitelist_system_full">A system app that holds this access by default.</string>
+</resources>

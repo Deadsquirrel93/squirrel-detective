@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Squirrel Detective</string>
+
+    <string name="welcome_title">Squirrel Detective</string>
+    <string name="welcome_subtitle">Локальный аудит установленных приложений. Без сети, без аналитики.</string>
+    <string name="mode_full_scan_title">Сканировать все приложения</string>
+    <string name="mode_full_scan_body">Проверить каждое установленное приложение и подсветить опасные комбинации разрешений.</string>
+    <string name="include_system_apps">Включая системные приложения</string>
+    <string name="include_system_apps_hint">Системные приложения предустановлены производителем устройства и обычно не удаляются.</string>
+    <string name="start_scan">Начать сканирование</string>
+    <string name="mode_single_app_title">Сканировать конкретное приложение</string>
+    <string name="mode_single_app_body">Выберите одно установленное приложение и посмотрите его разрешения, receiver\'ы и сигналы риска.</string>
+    <string name="choose_app">Выбрать приложение</string>
+    <string name="open_settings">Настройки</string>
+
+    <string name="picker_title">Выберите приложение</string>
+    <string name="picker_search_hint">Поиск по названию или пакету</string>
+    <string name="picker_show_system">Показывать системные</string>
+    <string name="picker_no_results">Подходящих приложений не найдено</string>
+    <string name="picker_loading">Загружаем список приложений…</string>
+
+    <string name="results_title">Результаты сканирования</string>
+    <string name="results_subtitle_count">%1$d приложений с замечаниями</string>
+    <string name="results_scanning_progress">Сканирование %1$d / %2$d</string>
+    <string name="results_scanning">Сканирование…</string>
+    <string name="results_preparing">Подготовка к сканированию…</string>
+    <string name="results_changes_banner">Изменения у %1$d приложений с прошлого сканирования</string>
+    <string name="results_empty_risky">Подозрительных приложений не найдено</string>
+    <string name="results_safe_section">Безопасные приложения (%1$d)</string>
+    <string name="results_rescan">Пересканировать</string>
+    <string name="results_back">Назад</string>
+
+    <string name="filter_all">Все</string>
+    <string name="filter_red">Высокий</string>
+    <string name="filter_yellow">Средний</string>
+    <string name="filter_green">Ожидаем</string>
+
+    <string name="risk_red">ВЫСОКИЙ</string>
+    <string name="risk_yellow">СРЕДНИЙ</string>
+    <string name="risk_green">ОЖИДАЕМ</string>
+    <string name="risk_safe">БЕЗОПАСНО</string>
+
+    <string name="detail_title_fallback">Подробности</string>
+    <string name="detail_section_findings">Что обнаружено</string>
+    <string name="detail_section_permissions">Все разрешения (%1$d)</string>
+    <string name="detail_section_receivers">Пакетные broadcast-receiver\'ы</string>
+    <string name="detail_version_label">версия %1$s</string>
+    <string name="detail_installer_label">установлено через: %1$s</string>
+    <string name="detail_system_app">Системное приложение</string>
+    <string name="detail_short_default">Подозрительной активности не выявлено</string>
+    <string name="detail_open_in_system_settings">Открыть в настройках системы</string>
+    <string name="detail_open_in_system_settings_failed">Не удалось открыть системные настройки для этого приложения</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="language_title">Язык</string>
+    <string name="language_body">Выберите язык приложения. По умолчанию используется русский.</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_english">English</string>
+    <string name="about_title">О Squirrel Detective</string>
+    <string name="about_body">Squirrel Detective — полностью офлайновый Android-аудитор. Перебирает установленные пакеты локально и подсвечивает приложения, которые могут молча сканировать другие. Никакой сети, никакой аналитики.</string>
+
+    <string name="threat_query_all_internet_short">Видит все приложения и имеет доступ в интернет</string>
+    <string name="threat_query_all_internet_full">Приложение объявило разрешение QUERY_ALL_PACKAGES, позволяющее перечислять все установленные пакеты, и одновременно имеет доступ к сети. Такая комбинация позволяет молча отправлять список ваших приложений на удалённый сервер.</string>
+    <string name="threat_query_all_short">Может видеть список всех приложений</string>
+    <string name="threat_query_all_full">Приложение объявило QUERY_ALL_PACKAGES — оно обходит фильтрацию видимости пакетов Android 11+ и видит каждое установленное приложение.</string>
+    <string name="threat_read_logs_internet_short">Читает системные логи и имеет интернет</string>
+    <string name="threat_read_logs_short">Читает системные логи (видит запуски приложений)</string>
+    <string name="threat_read_logs_full">Разрешение READ_LOGS даёт доступ к системному журналу logcat, по которому можно отследить, какие приложения запускаются, какие отправляются intents и часть отладочных данных. На не-rooted устройствах оно обычно не нужно.</string>
+    <string name="threat_package_usage_short">Следит за историей использования приложений</string>
+    <string name="threat_package_usage_full">PACKAGE_USAGE_STATS позволяет видеть, какие приложения вы открывали и как долго ими пользовались. Применяется родительским контролем и системами цифрового благополучия, но также может использоваться для слежки.</string>
+    <string name="threat_install_packages_short">Может устанавливать другие приложения</string>
+    <string name="threat_install_packages_full">REQUEST_INSTALL_PACKAGES даёт возможность устанавливать APK-файлы помимо Google Play. Легитимно для альтернативных магазинов, но опасно у обычных приложений — может использоваться для подсовывания рекламных или вредоносных APK.</string>
+    <string name="threat_get_accounts_short">Видит список аккаунтов на устройстве</string>
+    <string name="threat_get_accounts_full">GET_ACCOUNTS возвращает список аккаунтов (Google, почта и т.д.). В сочетании с интернет-доступом может использоваться для деанонимизации.</string>
+    <string name="threat_accessibility_short">Запрашивает службу специальных возможностей</string>
+    <string name="threat_accessibility_full">Accessibility-сервис может читать содержимое экрана любого приложения и эмулировать жесты. Это самый мощный канал слежки на Android — давайте такое разрешение только проверенным приложениям.</string>
+    <string name="threat_receiver_added_short">Реагирует на установку новых приложений</string>
+    <string name="threat_receiver_added_full">В манифесте объявлен receiver на ACTION_PACKAGE_ADDED. Приложение получает уведомление каждый раз, когда пользователь устанавливает что-то новое.</string>
+    <string name="threat_receiver_removed_short">Реагирует на удаление приложений</string>
+    <string name="threat_receiver_removed_full">В манифесте объявлен receiver на ACTION_PACKAGE_REMOVED — приложение знает, когда удаляются другие пакеты.</string>
+    <string name="threat_receiver_boot_short">Сканирует пакеты сразу после загрузки устройства</string>
+    <string name="threat_receiver_boot_full">Приложение слушает BOOT_COMPLETED и одновременно имеет разрешения на чтение списка пакетов или истории использования. Это типичный сигнал автоматического сканирования при каждом включении телефона.</string>
+
+    <string name="threat_overlay_short">Может рисовать поверх других приложений</string>
+    <string name="threat_overlay_full">SYSTEM_ALERT_WINDOW позволяет приложению рисовать UI поверх любого другого. Используется для легитимных плавающих виджетов, но также для tap-jacking и фишинговых наложений.</string>
+    <string name="threat_record_audio_internet_short">Доступ к микрофону вместе с интернетом</string>
+    <string name="threat_record_audio_internet_full">RECORD_AUDIO с INTERNET означает, что приложение может записывать звук и отправлять его на сервер. Нужно мессенджерам с голосом, в остальных случаях подозрительно.</string>
+    <string name="threat_camera_internet_short">Доступ к камере вместе с интернетом</string>
+    <string name="threat_camera_internet_full">CAMERA с INTERNET означает, что фото и видео могут быть сняты и выгружены без участия пользователя.</string>
+    <string name="threat_sms_short">Читает или принимает SMS</string>
+    <string name="threat_sms_full">Доступ к SMS позволяет перехватывать коды подтверждения и личные сообщения. На современном Android это разрешено только приложению-SMS по умолчанию — иначе серьёзный сигнал тревоги.</string>
+    <string name="threat_contacts_internet_short">Читает контакты и имеет интернет</string>
+    <string name="threat_contacts_internet_full">READ_CONTACTS вместе с INTERNET позволяет молча выгрузить адресную книгу.</string>
+    <string name="threat_call_log_short">Читает журнал звонков</string>
+    <string name="threat_call_log_full">READ_CALL_LOG / WRITE_CALL_LOG показывают, кому и когда вы звоните. На современном Android — только для звонилок, иначе подозрительно.</string>
+    <string name="threat_phone_state_short">Читает состояние телефона и идентификаторы</string>
+    <string name="threat_phone_state_full">READ_PHONE_STATE / READ_PHONE_NUMBERS открывают доступ к IMEI, серийнику SIM, номерам линий — используется для фингерпринта устройства.</string>
+    <string name="threat_location_internet_short">Геолокация в фоне вместе с интернетом</string>
+    <string name="threat_location_internet_full">ACCESS_FINE_LOCATION или ACCESS_BACKGROUND_LOCATION вместе с интернетом позволяют непрерывно отслеживать ваши перемещения.</string>
+    <string name="threat_device_admin_short">Запрашивает права Device Admin</string>
+    <string name="threat_device_admin_full">BIND_DEVICE_ADMIN позволяет блокировать экран, форсировать пароль, а на старом Android — даже сбросить устройство. Легитимно только для MDM.</string>
+    <string name="threat_notifications_short">Читает все уведомления</string>
+    <string name="threat_notifications_full">BIND_NOTIFICATION_LISTENER_SERVICE открывает все уведомления, в том числе чувствительные — от банков и мессенджеров.</string>
+    <string name="threat_vpn_short">Работает как VPN</string>
+    <string name="threat_vpn_full">BIND_VPN_SERVICE пускает весь трафик устройства через это приложение — оно может анализировать или менять всё, что вы отправляете.</string>
+    <string name="threat_input_method_short">Работает как клавиатура</string>
+    <string name="threat_input_method_full">BIND_INPUT_METHOD позволяет приложению перехватывать каждую нажатую клавишу. Ставьте клавиатуры только из проверенных источников.</string>
+    <string name="threat_external_storage_short">Полный доступ к файловой системе</string>
+    <string name="threat_external_storage_full">MANAGE_EXTERNAL_STORAGE даёт чтение/запись всего общего хранилища — включая приватные папки приложений на старом Android.</string>
+    <string name="threat_write_settings_short">Меняет системные настройки</string>
+    <string name="threat_write_settings_full">WRITE_SECURE_SETTINGS / WRITE_SETTINGS позволяют менять системную конфигурацию, включая флаги безопасности.</string>
+    <string name="threat_get_tasks_short">Изучает запущенные задачи</string>
+    <string name="threat_get_tasks_full">GET_TASKS / REAL_GET_TASKS показывают, какие приложения работают. Устаревшее, разрешено только системным — для несистемных приложений это сигнал.</string>
+    <string name="threat_unknown_installer_short">Установлено из неизвестного источника</string>
+    <string name="threat_unknown_installer_full">Приложение sideloaded (нет installer package или он неизвестен) и сочетает несколько чувствительных разрешений. Sideloaded-приложения с широким доступом стоит проверять вручную.</string>
+    <string name="threat_debuggable_short">Приложение помечено как debuggable</string>
+    <string name="threat_debuggable_full">Приложение собрано с android:debuggable=true. Релизные сборки не должны быть debuggable — отладчик может читать память и внедрять код.</string>
+    <string name="threat_old_target_sdk_short">Нацелено на устаревшую версию Android</string>
+    <string name="threat_old_target_sdk_full">Приложение собрано под старый SDK (ниже API 23). На современном Android это обходит модель runtime-разрешений — все опасные разрешения выдаются автоматически при установке.</string>
+    <string name="threat_no_launcher_short">Скрытое приложение — нет иконки</string>
+    <string name="threat_no_launcher_full">У приложения нет launcher-активити, в шторке приложений его иконки нет. В сочетании с чувствительными разрешениями это типичный паттерн stalkerware.</string>
+
+    <string name="wiki_title">Wiki по разрешениям</string>
+    <string name="wiki_card_title">Wiki по разрешениям</string>
+    <string name="wiki_card_body">Понятная справка по тому, что даёт каждое Android-разрешение. Чтобы не лезть в Google.</string>
+    <string name="wiki_open">Открыть Wiki</string>
+    <string name="wiki_intro">Короткий человеческий справочник по разрешениям Android. Нажмите на категорию, чтобы развернуть.</string>
+
+    <string name="wiki_category_visibility">Наблюдение и мониторинг</string>
+    <string name="wiki_category_services">Мощные системные сервисы</string>
+    <string name="wiki_category_sensors">Сенсоры</string>
+    <string name="wiki_category_communication">Связь и идентификация</string>
+    <string name="wiki_category_location">Геолокация</string>
+    <string name="wiki_category_storage">Хранилище</string>
+    <string name="wiki_category_system">Система и установка</string>
+
+    <string name="wiki_internet_title">INTERNET</string>
+    <string name="wiki_internet_body">Позволяет приложению открывать сетевые соединения. Разрешение почти универсальное — но именно оно даёт возможность отправить наружу всё, что прочитано через другие разрешения (контакты, файлы, геолокацию, список пакетов).</string>
+
+    <string name="wiki_query_all_title">QUERY_ALL_PACKAGES</string>
+    <string name="wiki_query_all_body">Обходит фильтрацию видимости пакетов в Android 11+ и показывает все установленные приложения. Легитимно для лаунчеров, магазинов, антивирусов и файловых менеджеров — в остальных случаях подозрительно, особенно вместе с INTERNET.</string>
+
+    <string name="wiki_usage_stats_title">PACKAGE_USAGE_STATS</string>
+    <string name="wiki_usage_stats_body">Показывает, какие приложения вы открывали, когда и как долго. Используется цифровым благополучием, родительским контролем и трекерами статистики — а также характерный сигнал stalkerware. Должен быть выдан вручную в системных настройках.</string>
+
+    <string name="wiki_read_logs_title">READ_LOGS</string>
+    <string name="wiki_read_logs_body">Читает системный журнал logcat, куда пишут отладку, intents и ошибки все приложения. На устройствах без root Android выдаёт это разрешение только системным или dev-приложениям. У обычного приложения это серьёзный сигнал.</string>
+
+    <string name="wiki_get_tasks_title">GET_TASKS / REAL_GET_TASKS</string>
+    <string name="wiki_get_tasks_body">Перечисляет запущенные задачи и недавние активности. Устарело с Android 5 и зарезервировано для системных приложений — у сторонних выглядит устаревшим или инвазивным.</string>
+
+    <string name="wiki_accessibility_title">BIND_ACCESSIBILITY_SERVICE</string>
+    <string name="wiki_accessibility_body">Позволяет приложению читать содержимое любого экрана и эмулировать жесты и нажатия. Самый мощный канал слежки на Android. Давайте только тем приложениям, которым доверяете полностью (скрин-ридеры, менеджеры паролей).</string>
+
+    <string name="wiki_device_admin_title">BIND_DEVICE_ADMIN</string>
+    <string name="wiki_device_admin_body">Права администратора устройства: блокировка экрана, форсирование политики паролей, отключение камеры, на старом Android — даже сброс устройства. Легитимно только для MDM и корпоративных систем управления.</string>
+
+    <string name="wiki_notif_listener_title">BIND_NOTIFICATION_LISTENER_SERVICE</string>
+    <string name="wiki_notif_listener_body">Читает каждое уведомление от каждого приложения, включая SMS-коды, банковские оповещения и превью переписки. Легитимно для смарт-часов и менеджеров уведомлений, в остальных местах — высокий риск.</string>
+
+    <string name="wiki_vpn_title">BIND_VPN_SERVICE</string>
+    <string name="wiki_vpn_body">Заворачивает весь трафик устройства через это приложение. Вредоносный или небрежный VPN может анализировать, логировать и менять всё, что вы отправляете. Используйте только проверенных провайдеров.</string>
+
+    <string name="wiki_input_method_title">BIND_INPUT_METHOD</string>
+    <string name="wiki_input_method_body">Позволяет приложению быть системной клавиатурой — а значит видеть каждую нажатую клавишу, включая пароли. Ставьте только клавиатуры от известных авторов.</string>
+
+    <string name="wiki_overlay_title">SYSTEM_ALERT_WINDOW</string>
+    <string name="wiki_overlay_body">Рисует UI поверх любого другого приложения. Полезно для чатовых пузырьков и плавающих виджетов — также используется для tap-jacking атак и фишинговых наложений.</string>
+
+    <string name="wiki_camera_title">CAMERA</string>
+    <string name="wiki_camera_body">Прямой доступ к камерам устройства. Вместе с INTERNET даёт возможность снимать и выгружать фото и видео без участия пользователя. Нужен камерам, видеосвязи, AR-приложениям; выдаётся в рантайме.</string>
+
+    <string name="wiki_record_audio_title">RECORD_AUDIO</string>
+    <string name="wiki_record_audio_body">Прямой доступ к микрофону. Вместе с INTERNET может использоваться для записи и выгрузки звука. Легитимно для голосовых мессенджеров, диктофонов и ассистентов. На Android 12+ в строке состояния появляется индикатор активного микрофона.</string>
+
+    <string name="wiki_sms_title">READ_SMS / RECEIVE_SMS / SEND_SMS</string>
+    <string name="wiki_sms_body">Читает или перехватывает SMS, в том числе коды подтверждения. На современном Android полный набор выдаётся только приложению-SMS по умолчанию — у любого другого приложения это серьёзный сигнал.</string>
+
+    <string name="wiki_contacts_title">READ_CONTACTS / WRITE_CONTACTS</string>
+    <string name="wiki_contacts_body">Читает или меняет адресную книгу. Вместе с INTERNET позволяет молча выгрузить список контактов — классический паттерн сбора данных.</string>
+
+    <string name="wiki_call_log_title">READ_CALL_LOG / WRITE_CALL_LOG</string>
+    <string name="wiki_call_log_body">Читает или меняет журнал звонков. На современном Android доступ ограничен звонилками и дефолтным телефонным приложением. В остальных местах — подозрительно.</string>
+
+    <string name="wiki_phone_state_title">READ_PHONE_STATE / READ_PHONE_NUMBERS</string>
+    <string name="wiki_phone_state_body">Открывает IMEI, серийник SIM и номер линии. Используется для фингерпринта устройства и деанонимизации между переустановками приложения.</string>
+
+    <string name="wiki_location_title">ACCESS_FINE_LOCATION / ACCESS_COARSE_LOCATION</string>
+    <string name="wiki_location_body">FINE даёт точные GPS-координаты, COARSE — точность примерно до квартала. Нужны картам, навигации, погоде. Вместе с INTERNET позволяют непрерывно отслеживать перемещения.</string>
+
+    <string name="wiki_bg_location_title">ACCESS_BACKGROUND_LOCATION</string>
+    <string name="wiki_bg_location_body">Позволяет получать геолокацию, когда приложение в фоне. Выдаётся отдельным экраном согласия — оправдан только для навигации, фитнеса и семейных трекеров.</string>
+
+    <string name="wiki_manage_storage_title">MANAGE_EXTERNAL_STORAGE</string>
+    <string name="wiki_manage_storage_body">Чтение и запись всего общего хранилища и большинства папок приложений. Power-user разрешение для файловых менеджеров, бэкапов и архиваторов; в остальных местах опасно.</string>
+
+    <string name="wiki_storage_title">READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE</string>
+    <string name="wiki_storage_body">Старые разрешения на чтение/запись общего хранилища (Photos, Downloads, Music). На Android 13+ заменены раздельными разрешениями на фото, видео и аудио.</string>
+
+    <string name="wiki_install_packages_title">REQUEST_INSTALL_PACKAGES</string>
+    <string name="wiki_install_packages_body">Позволяет устанавливать APK помимо Google Play. Нужно альтернативным магазинам и обновлялкам. У случайного приложения — риск установки рекламы или вредоносных обновлений.</string>
+
+    <string name="wiki_get_accounts_title">GET_ACCOUNTS</string>
+    <string name="wiki_get_accounts_body">Перечисляет аккаунты на устройстве (Google, почта, мессенджеры). Вместе с INTERNET может использоваться для идентификации пользователя между приложениями.</string>
+
+    <string name="wiki_write_settings_title">WRITE_SETTINGS / WRITE_SECURE_SETTINGS</string>
+    <string name="wiki_write_settings_body">Меняет системные настройки; SECURE-вариант — флаги, связанные с безопасностью. SECURE-форма зарезервирована за системными приложениями, у стороннего приложения это серьёзный сигнал.</string>
+
+    <string name="wiki_post_notifications_title">POST_NOTIFICATIONS</string>
+    <string name="wiki_post_notifications_body">С Android 13 требуется, чтобы показывать любые уведомления. Стандартное для чатов, новостей и почты, само по себе не чувствительно.</string>
+
+    <string name="wiki_boot_title">RECEIVE_BOOT_COMPLETED</string>
+    <string name="wiki_boot_body">Позволяет приложению автоматически стартовать после перезагрузки устройства. Стандартно для мессенджеров и будильников; в сочетании с доступом к списку пакетов или статистике использования — типичный сигнал фонового сканирования.</string>
+
+    <string name="wiki_foreground_service_title">FOREGROUND_SERVICE</string>
+    <string name="wiki_foreground_service_body">Разрешает долгоживущую фоновую работу с постоянным уведомлением — нужно плеерам, навигации, фитнес-трекерам и загрузкам. Требуется самим Android, само по себе не опасно.</string>
+
+    <string name="wiki_wake_lock_title">WAKE_LOCK</string>
+    <string name="wiki_wake_lock_body">Удерживает процессор или экран в активном состоянии. Используется плеерами, будильниками и загрузчиками. Влияет на батарею, но не на приватность.</string>
+
+    <string name="whitelist_launcher_short">Лаунчер — доступ к списку приложений ожидаем</string>
+    <string name="whitelist_launcher_full">Это лаунчер. Он обязан перечислять установленные приложения, чтобы рисовать иконки на рабочем столе. В этом контексте QUERY_ALL_PACKAGES — нормальное поведение.</string>
+    <string name="whitelist_store_short">Магазин приложений — доступ ожидаем</string>
+    <string name="whitelist_store_full">Это магазин приложений. Он по определению управляет установкой и обновлением пакетов, поэтому имеет соответствующие разрешения.</string>
+    <string name="whitelist_file_manager_short">Файловый менеджер — доступ ожидаем</string>
+    <string name="whitelist_file_manager_full">Файловые менеджеры показывают APK-файлы и позволяют их устанавливать, поэтому требуют видимости пакетов.</string>
+    <string name="whitelist_antivirus_short">Антивирус — доступ ожидаем</string>
+    <string name="whitelist_antivirus_full">Антивирус сканирует установленные пакеты — это его прямая функция.</string>
+    <string name="whitelist_system_short">Системный инструмент</string>
+    <string name="whitelist_system_full">Системное приложение, имеющее этот доступ по умолчанию.</string>
+</resources>
