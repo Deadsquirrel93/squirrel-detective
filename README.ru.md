@@ -161,7 +161,7 @@ Debug-сборка:
 ./gradlew :app:assembleDebug
 ```
 
-Release-сборка (подписывается локальным keystore, см. ниже):
+Release-сборка:
 
 ```bash
 ./gradlew :app:assembleRelease
@@ -178,18 +178,11 @@ Release-сборка (подписывается локальным keystore, с
 - `app/build/outputs/apk/debug/app-debug.apk`
 - `app/build/outputs/apk/release/app-release.apk`
 
-## Подпись релиза
+## Подпись APK
 
-Релизная сборка ищет файл `keystore.properties` в корне репозитория со следующими ключами:
+И debug-, и release-сборка подписываются стандартным Android-debug keystore (`~/.android/debug.keystore`). Это сознательное решение под sideload-дистрибуцию: свежий самоподписанный релизный сертификат не имеет репутации в Play Protect и при первой установке у каждого пользователя гарантированно вызывает предупреждение «harmful app». Debug-ключ Android и Play Protect хорошо знают, поэтому sideload-установка остаётся без лишних предупреждений.
 
-```
-storeFile=app/release.keystore
-storePassword=...
-keyAlias=...
-keyPassword=...
-```
-
-И keystore-файл, и `keystore.properties` находятся в `.gitignore` и не должны попадать в репозиторий. Если их нет, `assembleRelease` собирает неподписанный APK. Бэкапьте keystore — без него выпустить обновление, которое поставится поверх существующей установки, не получится.
+Минус компромисса: debug-ключ не уникален для проекта — любой обладатель того же debug-ключа может выпустить сборку, которая установится «обновлением» поверх вашей. Для небольшой open-source утилиты, распространяемой sideload'ом, это приемлемый размен.
 
 ## Официальная дистрибуция
 

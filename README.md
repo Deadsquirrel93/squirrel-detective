@@ -161,7 +161,7 @@ Debug build:
 ./gradlew :app:assembleDebug
 ```
 
-Release build (signed with the local keystore — see below):
+Release build:
 
 ```bash
 ./gradlew :app:assembleRelease
@@ -178,18 +178,11 @@ Output paths:
 - `app/build/outputs/apk/debug/app-debug.apk`
 - `app/build/outputs/apk/release/app-release.apk`
 
-## Release Signing
+## APK Signing
 
-The release build looks for a `keystore.properties` file at the repository root with the following keys:
+Both the debug and release APKs are signed with the standard Android debug keystore (`~/.android/debug.keystore`). This is intentional for sideloaded distribution: a fresh self-signed release certificate would have no Play Protect reputation and trigger a "harmful app" warning on first install for every user. The debug key is well-known to Android and Play Protect, which keeps the sideload install path frictionless.
 
-```
-storeFile=app/release.keystore
-storePassword=...
-keyAlias=...
-keyPassword=...
-```
-
-Both the keystore file and `keystore.properties` are git-ignored and must never be committed. If they are missing, `assembleRelease` falls back to producing an unsigned APK. Keep the keystore in a safe place — losing it means future updates cannot be installed as upgrades on top of the original install.
+The trade-off is that the debug key is not unique to this project — anyone with the same debug key can publish a build that installs as an "update" over yours. For a small, source-available, sideloaded utility this is an acceptable trade.
 
 ## Official Distribution
 
