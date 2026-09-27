@@ -3,6 +3,7 @@ package com.packagespy.app.domain.usecase
 import android.Manifest
 import com.packagespy.app.R
 import com.packagespy.app.domain.model.AppRiskInfo
+import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.KnownLegitimateApps
 import com.packagespy.app.domain.model.LegitimateCategory
 import com.packagespy.app.domain.model.ReceiverInfo
@@ -15,7 +16,9 @@ import javax.inject.Singleton
 /**
  * Pure-Kotlin risk classifier. Takes raw permission/receiver data already
  * extracted by the scanner and converts it into a list of [ThreatReason]s
- * plus an aggregate [RiskLevel].
+ * plus an aggregate [RiskLevel]. Since stage 02, BIND_* capabilities are
+ * detected from declared service/receiver components rather than from
+ * `uses-permission`, which any app can declare without effect.
  */
 @Singleton
 class RiskScorer @Inject constructor() {
@@ -28,6 +31,7 @@ class RiskScorer @Inject constructor() {
         val installerPackage: String?,
         val permissions: List<String>,
         val receivers: List<ReceiverInfo>,
+        val services: List<DeclaredService> = emptyList(),
         val isDebuggable: Boolean = false,
         val targetSdk: Int = 0,
         val hasLauncherIntent: Boolean = true,
@@ -94,7 +98,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (BIND_ACCESSIBILITY_SERVICE in permSet) {
+        if (inputs.services.any { it.permission == BIND_ACCESSIBILITY_SERVICE }) {
             reasons += reason(
                 ThreatId.BIND_ACCESSIBILITY,
                 R.string.threat_accessibility_short,
@@ -114,7 +118,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (BIND_DEVICE_ADMIN in permSet) {
+        if (inputs.receivers.any { it.permission == BIND_DEVICE_ADMIN }) {
             reasons += reason(
                 ThreatId.DEVICE_ADMIN,
                 R.string.threat_device_admin_short,
@@ -123,7 +127,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (BIND_NOTIFICATION_LISTENER in permSet) {
+        if (inputs.services.any { it.permission == BIND_NOTIFICATION_LISTENER }) {
             reasons += reason(
                 ThreatId.NOTIFICATION_LISTENER,
                 R.string.threat_notifications_short,
@@ -132,7 +136,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (BIND_VPN_SERVICE in permSet) {
+        if (inputs.services.any { it.permission == BIND_VPN_SERVICE }) {
             reasons += reason(
                 ThreatId.VPN_SERVICE,
                 R.string.threat_vpn_short,
@@ -141,7 +145,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (BIND_INPUT_METHOD in permSet) {
+        if (inputs.services.any { it.permission == BIND_INPUT_METHOD }) {
             reasons += reason(
                 ThreatId.INPUT_METHOD_SERVICE,
                 R.string.threat_input_method_short,

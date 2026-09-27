@@ -2,6 +2,7 @@ package com.packagespy.app.domain.usecase
 
 import android.Manifest
 import com.packagespy.app.domain.model.AppRiskInfo
+import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.ReceiverInfo
 import com.packagespy.app.domain.model.RiskLevel
 import com.packagespy.app.domain.model.ThreatId
@@ -26,6 +27,7 @@ class RiskScorerTest {
         installerPackage: String? = "com.android.vending",
         permissions: List<String> = emptyList(),
         receivers: List<ReceiverInfo> = emptyList(),
+        services: List<DeclaredService> = emptyList(),
         isDebuggable: Boolean = false,
         targetSdk: Int = 34,
         hasLauncherIntent: Boolean = true,
@@ -37,6 +39,7 @@ class RiskScorerTest {
         installerPackage = installerPackage,
         permissions = permissions,
         receivers = receivers,
+        services = services,
         isDebuggable = isDebuggable,
         targetSdk = targetSdk,
         hasLauncherIntent = hasLauncherIntent,
@@ -120,39 +123,9 @@ class RiskScorerTest {
                 RiskLevel.YELLOW,
             ),
             RuleCase(
-                "BIND_ACCESSIBILITY_SERVICE",
-                listOf(RiskScorer.BIND_ACCESSIBILITY_SERVICE),
-                ThreatId.BIND_ACCESSIBILITY,
-                RiskLevel.RED,
-            ),
-            RuleCase(
                 "SYSTEM_ALERT_WINDOW",
                 listOf(RiskScorer.SYSTEM_ALERT_WINDOW),
                 ThreatId.OVERLAY_WINDOW,
-                RiskLevel.YELLOW,
-            ),
-            RuleCase(
-                "BIND_DEVICE_ADMIN",
-                listOf(RiskScorer.BIND_DEVICE_ADMIN),
-                ThreatId.DEVICE_ADMIN,
-                RiskLevel.RED,
-            ),
-            RuleCase(
-                "BIND_NOTIFICATION_LISTENER",
-                listOf(RiskScorer.BIND_NOTIFICATION_LISTENER),
-                ThreatId.NOTIFICATION_LISTENER,
-                RiskLevel.YELLOW,
-            ),
-            RuleCase(
-                "BIND_VPN_SERVICE",
-                listOf(RiskScorer.BIND_VPN_SERVICE),
-                ThreatId.VPN_SERVICE,
-                RiskLevel.YELLOW,
-            ),
-            RuleCase(
-                "BIND_INPUT_METHOD",
-                listOf(RiskScorer.BIND_INPUT_METHOD),
-                ThreatId.INPUT_METHOD_SERVICE,
                 RiskLevel.YELLOW,
             ),
             RuleCase(
@@ -228,6 +201,110 @@ class RiskScorerTest {
             assertEquals("case: ${case.label}", listOf(case.expectedId), ids(result))
             assertEquals("case: ${case.label}", case.expectedLevel, result.riskLevel)
         }
+    }
+
+    // ---- 4b: BIND_* capabilities are detected from declared components ----
+
+    private data class ComponentRuleCase(
+        val label: String,
+        val services: List<DeclaredService> = emptyList(),
+        val receivers: List<ReceiverInfo> = emptyList(),
+        val expectedId: ThreatId,
+        val expectedLevel: RiskLevel,
+    )
+
+    @Test
+    fun `each BIND_ capability is detected from its declared component`() {
+        val cases = listOf(
+            ComponentRuleCase(
+                "BIND_ACCESSIBILITY_SERVICE via service",
+                services = listOf(DeclaredService("Svc", RiskScorer.BIND_ACCESSIBILITY_SERVICE)),
+                expectedId = ThreatId.BIND_ACCESSIBILITY,
+                expectedLevel = RiskLevel.RED,
+            ),
+            ComponentRuleCase(
+                "BIND_DEVICE_ADMIN via receiver",
+                receivers = listOf(ReceiverInfo("Rcvr", emptyList(), RiskScorer.BIND_DEVICE_ADMIN)),
+                expectedId = ThreatId.DEVICE_ADMIN,
+                expectedLevel = RiskLevel.RED,
+            ),
+            ComponentRuleCase(
+                "BIND_NOTIFICATION_LISTENER via service",
+                services = listOf(DeclaredService("Svc", RiskScorer.BIND_NOTIFICATION_LISTENER)),
+                expectedId = ThreatId.NOTIFICATION_LISTENER,
+                expectedLevel = RiskLevel.YELLOW,
+            ),
+            ComponentRuleCase(
+                "BIND_VPN_SERVICE via service",
+                services = listOf(DeclaredService("Svc", RiskScorer.BIND_VPN_SERVICE)),
+                expectedId = ThreatId.VPN_SERVICE,
+                expectedLevel = RiskLevel.YELLOW,
+            ),
+            ComponentRuleCase(
+                "BIND_INPUT_METHOD via service",
+                services = listOf(DeclaredService("Svc", RiskScorer.BIND_INPUT_METHOD)),
+                expectedId = ThreatId.INPUT_METHOD_SERVICE,
+                expectedLevel = RiskLevel.YELLOW,
+            ),
+        )
+
+        for (case in cases) {
+            val result = scorer.score(inputs(services = case.services, receivers = case.receivers))
+            assertEquals("case: ${case.label}", listOf(case.expectedId), ids(result))
+            assertEquals("case: ${case.label}", case.expectedLevel, result.riskLevel)
+        }
+    }
+
+    @Test
+    fun `BIND_ uses-permission without a matching component is not flagged`() {
+        val bindPermissions = listOf(
+            RiskScorer.BIND_ACCESSIBILITY_SERVICE,
+            RiskScorer.BIND_DEVICE_ADMIN,
+            RiskScorer.BIND_NOTIFICATION_LISTENER,
+            RiskScorer.BIND_VPN_SERVICE,
+            RiskScorer.BIND_INPUT_METHOD,
+        )
+        for (permission in bindPermissions) {
+            val result = scorer.score(inputs(permissions = listOf(permission)))
+            assertTrue("permission: $permission", result.reasons.isEmpty())
+            assertEquals("permission: $permission", RiskLevel.SAFE, result.riskLevel)
+        }
+    }
+
+    @Test
+    fun `service with an unrelated bind permission is not flagged`() {
+        val result = scorer.score(
+            inputs(services = listOf(DeclaredService("Svc", "android.permission.BIND_JOB_SERVICE")))
+        )
+        assertTrue(result.reasons.isEmpty())
+        assertEquals(RiskLevel.SAFE, result.riskLevel)
+    }
+
+    @Test
+    fun `device admin permission on a service is not flagged`() {
+        val result = scorer.score(
+            inputs(services = listOf(DeclaredService("Svc", RiskScorer.BIND_DEVICE_ADMIN)))
+        )
+        assertTrue(ThreatId.DEVICE_ADMIN !in ids(result))
+    }
+
+    @Test
+    fun `accessibility permission on a receiver is not flagged`() {
+        val result = scorer.score(
+            inputs(receivers = listOf(ReceiverInfo("Rcvr", emptyList(), RiskScorer.BIND_ACCESSIBILITY_SERVICE)))
+        )
+        assertTrue(ThreatId.BIND_ACCESSIBILITY !in ids(result))
+    }
+
+    @Test
+    fun `system app with an accessibility service is downgraded to YELLOW`() {
+        val result = scorer.score(
+            inputs(
+                isSystemApp = true,
+                services = listOf(DeclaredService("Svc", RiskScorer.BIND_ACCESSIBILITY_SERVICE)),
+            )
+        )
+        assertEquals(RiskLevel.YELLOW, result.riskLevel)
     }
 
     // ---- 5: "+INTERNET" combos without INTERNET are not flagged ----

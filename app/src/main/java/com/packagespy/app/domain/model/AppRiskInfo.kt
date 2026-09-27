@@ -15,6 +15,12 @@ data class AppRiskInfo(
 data class ReceiverInfo(
     val name: String,
     val actions: List<String>,
+    val permission: String? = null,
+)
+
+data class DeclaredService(
+    val name: String,
+    val permission: String?,
 )
 
 /** Lightweight summary used by the picker — no permission scan, just metadata. */
