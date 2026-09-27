@@ -98,4 +98,13 @@ class MainViewModel @Inject constructor(
 
     fun setFilter(value: RiskFilter) { filter.value = value }
     fun toggleSafe() { showSafe.value = !showSafe.value }
+
+    /** Called when the user expands the changes banner; moves the baseline for those packages. */
+    fun onChangesExpanded() {
+        val packages = recentChanges.value.map { it.packageName }.toSet()
+        if (packages.isEmpty()) return
+        viewModelScope.launch {
+            repository.acknowledgeChanges(packages)
+        }
+    }
 }

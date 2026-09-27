@@ -77,7 +77,7 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var changesExpanded by rememberSaveable { mutableStateOf(false) }
+    var changesExpanded by rememberSaveable(state.recentChanges) { mutableStateOf(false) }
 
     LaunchedEffect(includeSystem) {
         viewModel.ensureInitialScan(includeSystem)
@@ -199,7 +199,11 @@ fun MainScreen(
                     changesSection(
                         changes = state.recentChanges,
                         expanded = changesExpanded,
-                        onToggle = { changesExpanded = !changesExpanded },
+                        onToggle = {
+                            val expanding = !changesExpanded
+                            changesExpanded = expanding
+                            if (expanding) viewModel.onChangesExpanded()
+                        },
                         onAppClick = onAppClick,
                     )
                 }
