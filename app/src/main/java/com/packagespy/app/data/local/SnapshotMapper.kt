@@ -1,10 +1,8 @@
 package com.packagespy.app.data.local
 
 import com.packagespy.app.domain.model.AppRiskInfo
-import com.packagespy.app.domain.model.RiskLevel
+import com.packagespy.app.domain.model.AppSnapshot
 import com.packagespy.app.domain.model.ThreatId
-import com.packagespy.app.domain.model.ThreatReason
-import com.packagespy.app.domain.usecase.RiskScorer
 
 private const val SEPARATOR = "\n"
 
@@ -23,38 +21,19 @@ fun AppRiskInfo.toEntity(scannedAtMillis: Long): AppSnapshotEntity {
 }
 
 /**
- * Re-scores an entity from its stored permissions so that risk-level changes
- * (e.g. updated rules) are reflected on next read. Receivers, debuggable
- * status and target SDK aren't persisted, so the diff use-case only
- * meaningfully compares permissions and reason ids.
+ * Rebuilds an [AppSnapshot] straight from the stored strings, with no
+ * re-scoring involved: the diff use-case only needs permission membership
+ * and the reason ids that were flagged at scan time.
  */
-fun AppSnapshotEntity.toDomain(scorer: RiskScorer): AppRiskInfo {
+fun AppSnapshotEntity.toSnapshot(): AppSnapshot {
     val perms = permissions.split(SEPARATOR).filter { it.isNotBlank() }
-    val storedReasonIds = reasonIds.split(SEPARATOR).filter { it.isNotBlank() }
+    val ids = reasonIds.split(SEPARATOR).filter { it.isNotBlank() }
         .mapNotNull { runCatching { ThreatId.valueOf(it) }.getOrNull() }
-    val rescored = scorer.score(
-        RiskScorer.Inputs(
-            packageName = packageName,
-            appName = appName,
-            versionName = versionName,
-            isSystemApp = isSystemApp,
-            installerPackage = installerPackage,
-            permissions = perms,
-            receivers = emptyList(),
-        )
-    )
-    val storedSeverity = RiskLevel.values().getOrElse(riskLevelOrdinal) { RiskLevel.SAFE }
-    return rescored.copy(
-        // Preserve stored reasons so diff has a stable history of what was flagged.
-        reasons = rescored.reasons.ifEmpty {
-            storedReasonIds.map {
-                ThreatReason(
-                    id = it,
-                    shortTextRes = 0,
-                    explanationRes = 0,
-                    severity = storedSeverity,
-                )
-            }
-        },
+        .toSet()
+    return AppSnapshot(
+        packageName = packageName,
+        appName = appName,
+        permissions = perms,
+        reasonIds = ids,
     )
 }

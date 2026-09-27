@@ -1,16 +1,16 @@
 package com.packagespy.app.data.repository
 
 import com.packagespy.app.data.local.AppSnapshotDao
-import com.packagespy.app.data.local.toDomain
 import com.packagespy.app.data.local.toEntity
+import com.packagespy.app.data.local.toSnapshot
 import com.packagespy.app.data.scanner.PackageScanner
 import com.packagespy.app.domain.model.AppDiff
 import com.packagespy.app.domain.model.AppRiskInfo
+import com.packagespy.app.domain.model.AppSnapshot
 import com.packagespy.app.domain.model.InstalledAppSummary
 import com.packagespy.app.domain.model.ScanProgress
 import com.packagespy.app.domain.repository.AppRiskRepository
 import com.packagespy.app.domain.usecase.ComputeDiffUseCase
-import com.packagespy.app.domain.usecase.RiskScorer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,14 +24,13 @@ import javax.inject.Singleton
 class AppRiskRepositoryImpl @Inject constructor(
     private val scanner: PackageScanner,
     private val dao: AppSnapshotDao,
-    private val scorer: RiskScorer,
     private val diffUseCase: ComputeDiffUseCase,
 ) : AppRiskRepository {
 
     private val cache = MutableStateFlow<List<AppRiskInfo>>(emptyList())
     private val progress = MutableStateFlow<ScanProgress?>(null)
     private val scanMutex = Mutex()
-    private var lastSnapshot: List<AppRiskInfo> = emptyList()
+    private var lastSnapshot: List<AppSnapshot> = emptyList()
 
     override fun observeApps() = cache.asStateFlow()
 
@@ -39,7 +38,7 @@ class AppRiskRepositoryImpl @Inject constructor(
 
     override suspend fun rescan(includeSystem: Boolean): List<AppRiskInfo> = scanMutex.withLock {
         withContext(Dispatchers.Default) {
-            val previous = dao.getAll().map { it.toDomain(scorer) }
+            val previous = dao.getAll().map { it.toSnapshot() }
             lastSnapshot = previous
 
             progress.value = ScanProgress(current = 0, total = 0)
