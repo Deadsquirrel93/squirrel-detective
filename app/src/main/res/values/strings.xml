@@ -35,6 +35,14 @@
         <item quantity="one">%d app changed since the last scan</item>
         <item quantity="other">%d apps changed since the last scan</item>
     </plurals>
+    <string name="results_changes_expand">Show changes</string>
+    <string name="results_changes_collapse">Hide changes</string>
+    <string name="results_changes_added_permission">+ %1$s</string>
+    <string name="results_changes_removed_permission">− %1$s</string>
+    <plurals name="results_changes_more">
+        <item quantity="one">and %d more</item>
+        <item quantity="other">and %d more</item>
+    </plurals>
     <string name="results_empty_risky">No suspicious apps found</string>
     <string name="results_safe_section">Safe apps (%1$d)</string>
     <string name="results_rescan">Rescan</string>

@@ -36,6 +36,16 @@
         <item quantity="many">Изменилось %d приложений с прошлого сканирования</item>
         <item quantity="other">Изменилось %d приложения с прошлого сканирования</item>
     </plurals>
+    <string name="results_changes_expand">Показать изменения</string>
+    <string name="results_changes_collapse">Скрыть изменения</string>
+    <string name="results_changes_added_permission">+ %1$s</string>
+    <string name="results_changes_removed_permission">− %1$s</string>
+    <plurals name="results_changes_more">
+        <item quantity="one">и ещё %d</item>
+        <item quantity="few">и ещё %d</item>
+        <item quantity="many">и ещё %d</item>
+        <item quantity="other">и ещё %d</item>
+    </plurals>
     <string name="results_empty_risky">Подозрительных приложений не найдено</string>
     <string name="results_safe_section">Безопасные приложения (%1$d)</string>
     <string name="results_rescan">Пересканировать</string>

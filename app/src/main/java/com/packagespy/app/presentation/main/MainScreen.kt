@@ -1,5 +1,6 @@
 package com.packagespy.app.presentation.main
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -41,6 +44,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,12 +58,15 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.packagespy.app.R
+import com.packagespy.app.domain.model.AppDiff
 import com.packagespy.app.domain.model.AppRiskInfo
 import com.packagespy.app.domain.model.ScanProgress
+import com.packagespy.app.domain.model.displayPermissionName
 import com.packagespy.app.presentation.components.AppIcon
 import com.packagespy.app.presentation.components.NutSpyBackground
 import com.packagespy.app.presentation.components.RiskBadge
 import com.packagespy.app.presentation.components.nutSpyTopAppBarColors
+import com.packagespy.app.presentation.theme.RiskColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,6 +77,7 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    var changesExpanded by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(includeSystem) {
         viewModel.ensureInitialScan(includeSystem)
@@ -186,7 +196,12 @@ fun MainScreen(
                 item { FilterRow(state.filter, viewModel::setFilter) }
 
                 if (state.recentChanges.isNotEmpty()) {
-                    item { ChangesBanner(changesCount = state.recentChanges.size) }
+                    changesSection(
+                        changes = state.recentChanges,
+                        expanded = changesExpanded,
+                        onToggle = { changesExpanded = !changesExpanded },
+                        onAppClick = onAppClick,
+                    )
                 }
 
                 if (state.risky.isEmpty()) {
@@ -253,12 +268,29 @@ private fun FilterRow(current: RiskFilter, onSelect: (RiskFilter) -> Unit) {
     }
 }
 
+private fun LazyListScope.changesSection(
+    changes: List<AppDiff>,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+    onAppClick: (String) -> Unit,
+) {
+    item(key = "changes_header") {
+        ChangesHeader(count = changes.size, expanded = expanded, onToggle = onToggle)
+    }
+    if (expanded) {
+        items(changes, key = { "diff:" + it.packageName }) { diff ->
+            ChangeCard(diff = diff, onClick = { onAppClick(diff.packageName) })
+        }
+    }
+}
+
 @Composable
-private fun ChangesBanner(changesCount: Int) {
+private fun ChangesHeader(count: Int, expanded: Boolean, onToggle: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .clickable(onClick = onToggle),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ),
@@ -274,10 +306,108 @@ private fun ChangesBanner(changesCount: Int) {
             )
             Spacer(Modifier.width(12.dp))
             Text(
-                pluralStringResource(R.plurals.results_changes_banner, changesCount, changesCount),
+                pluralStringResource(R.plurals.results_changes_banner, count, count),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
+            )
+            Icon(
+                if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+                contentDescription = stringResource(
+                    if (expanded) {
+                        R.string.results_changes_collapse
+                    } else {
+                        R.string.results_changes_expand
+                    },
+                ),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ChangeCard(diff: AppDiff, onClick: () -> Unit) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .clickable(onClick = onClick),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AppIcon(packageName = diff.packageName)
+                Spacer(Modifier.width(12.dp))
+                Text(
+                    text = diff.appName,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Icon(
+                    Icons.Filled.ChevronRight,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            diff.newReasons.forEach { reason ->
+                if (reason.shortTextRes != 0) {
+                    Spacer(Modifier.height(4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            Icons.Filled.Warning,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = RiskColors.textFor(reason.severity),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            text = stringResource(reason.shortTextRes),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+            if (diff.addedPermissions.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                PermissionDiffLines(
+                    permissions = diff.addedPermissions,
+                    lineRes = R.string.results_changes_added_permission,
+                )
+            }
+            if (diff.removedPermissions.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                PermissionDiffLines(
+                    permissions = diff.removedPermissions,
+                    lineRes = R.string.results_changes_removed_permission,
+                )
+            }
+        }
+    }
+}
+
+private const val MAX_PERMISSION_LINES = 5
+
+@Composable
+private fun PermissionDiffLines(permissions: List<String>, @StringRes lineRes: Int) {
+    Column {
+        permissions.take(MAX_PERMISSION_LINES).forEach { permission ->
+            Text(
+                text = stringResource(lineRes, displayPermissionName(permission)),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        val rest = permissions.size - MAX_PERMISSION_LINES
+        if (rest > 0) {
+            Text(
+                text = pluralStringResource(R.plurals.results_changes_more, rest, rest),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
