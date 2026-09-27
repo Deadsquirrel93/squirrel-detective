@@ -22,7 +22,8 @@ Squirrel Detective lets you:
 - read every Android permission an app declares
 - read every package-related broadcast receiver an app declares (`PACKAGE_ADDED` / `PACKAGE_REMOVED` / `BOOT_COMPLETED`)
 - jump from any report straight into Android system settings for that app, to revoke permissions or uninstall it
-- compare scans: when an app gains new sensitive permissions between scans, it is flagged automatically
+- compare scans: when an app gains new sensitive permissions or findings between scans, it is flagged until you open the changes banner
+- see whether an accessibility service, device admin, keyboard or notification listener is merely declared or actually turned on right now
 - browse a built-in Permission Wiki that explains, in plain language, what each Android permission actually grants
 - switch the entire interface between Russian and English at any time
 
@@ -41,6 +42,18 @@ The detector does not rely on a remote signature feed; everything is decided loc
 - `BIND_INPUT_METHOD` — keyboard service that sees every keystroke
 
 The five `BIND_*` capabilities above are detected from the components the app actually declares — a `<service>` (or, for device admin, a `<receiver>`) protected by that permission. Merely listing a `BIND_*` permission in `<uses-permission>` grants nothing to a third-party app and is not flagged.
+
+A declared component does nothing until you turn it on in system settings, so Squirrel Detective also checks what is enabled right now:
+
+| Capability | Declared | Turned on right now |
+|---|---|---|
+| Accessibility service | `MEDIUM` | separate `HIGH` finding |
+| Device admin | `MEDIUM` | separate `HIGH` finding |
+| Notification listener | `MEDIUM` | separate `HIGH` finding |
+| Keyboard (input method) | `MEDIUM` | separate `HIGH` finding |
+| VPN service | `MEDIUM` | not detectable |
+
+The enabled state comes from public Android APIs and needs no extra permission. Android does not tell other apps which app owns the active VPN, so VPN apps are always reported as declared. System apps are capped at `MEDIUM`, and whitelisted apps stay `EXPECTED`.
 
 - `SYSTEM_ALERT_WINDOW` — overlays drawn on top of other apps
 - `PACKAGE_USAGE_STATS` — usage history of every app
@@ -92,7 +105,8 @@ Squirrel Detective is built around a strict offline, observe-only model:
 
 - the app has no `INTERNET` permission and makes no network calls of any kind
 - nothing about the scanned apps ever leaves the device
-- the only persistent storage is a local Room database that holds the previous scan snapshot, used to compute diffs
+- the only persistent storage is a local Room database that holds the baseline scan snapshot, used to compute diffs
+- that database is excluded from Android cloud backup and from device-to-device transfer, so the list of your apps never ends up in a backup
 - the app declares `QUERY_ALL_PACKAGES` only because it is the only way Android 11+ exposes the full installed-package list — that is the entire reason this app exists; without it, an auditor cannot do its job
 
 ## Main Features
@@ -117,7 +131,9 @@ For every app the report shows:
 
 ### Diff between scans
 
-The previous snapshot is stored in a local Room database. After a fresh scan, a banner shows how many apps changed since the last scan. Expand it to see, for each changed app, its new findings and the permissions it added or removed; tap an app to open its detail screen.
+Every scan is compared with a baseline snapshot stored in a local Room database. When something changed, a banner shows how many apps changed. Expand it to see, for each changed app, its new findings (for example, an accessibility service that was just turned on) and the permissions it added or removed; tap an app to open its detail screen.
+
+The banner stays until you expand it: if you close the app or Android stops it in the background before you look, the next scan shows the same changes again. Expanding the banner marks the changes as seen and moves the baseline forward. If a change is undone before you look (a service is turned back off), it simply disappears from the banner.
 
 Scans run only when you start them — there is no background re-scan.
 
@@ -137,7 +153,8 @@ Russian and English. By default the app follows the system language; you can pic
 - Room 2.8
 - AndroidX Navigation Compose
 - minSdk 26, targetSdk 37, compileSdk 37
-- JUnit unit tests for the risk scorer, scan diff and scanner helpers
+- R8 code and resource shrinking for release builds
+- JUnit unit tests for the risk scorer, scan diff, diff baseline and scanner helpers
 
 ## Project Structure
 
@@ -184,13 +201,31 @@ Run unit tests:
 Output paths:
 
 - `app/build/outputs/apk/debug/app-debug.apk`
-- `app/build/outputs/apk/release/app-release.apk`
+- `app/build/outputs/apk/release/app-release.apk` (minified and resource-shrunk with R8, ~2.5 MB)
+
+Official release APKs are published as `squirrel-detective-<version>.apk`.
 
 ## APK Signing
 
-Both the debug and release APKs are signed with the standard Android debug keystore (`~/.android/debug.keystore`). This is intentional for sideloaded distribution: a fresh self-signed release certificate would have no Play Protect reputation and trigger a "harmful app" warning on first install for every user. The debug key is well-known to Android and Play Protect, which keeps the sideload install path frictionless.
+Official APKs (1.0.0 and later) are signed with a key that was generated on the maintainer's machine and exists only there. It happens to be an Android-SDK-style debug keystore (certificate `CN=Android Debug, O=Android, C=US`), but every machine generates its own random debug key, so nobody else can produce a build that installs as an update over an official one.
 
-The trade-off is that the debug key is not unique to this project — anyone with the same debug key can publish a build that installs as an "update" over yours. For a small, source-available, sideloaded utility this is an acceptable trade.
+Official builds have always used this key, so every new release installs as an update over the previous one and keeps your data. A brand-new certificate would have no Play Protect reputation either, and switching keys would force every user to uninstall first.
+
+Signing certificate SHA-256:
+
+```
+DB:AD:E5:21:40:5C:EC:12:11:D3:B1:42:2D:CC:05:80:36:44:6C:1D:08:D2:02:35:A7:26:82:17:4C:1A:94:CF
+```
+
+Verify a downloaded APK with `apksigner` from the Android SDK build-tools:
+
+```bash
+apksigner verify --print-certs squirrel-detective-2.0.0.apk
+```
+
+The `Signer #1 certificate SHA-256 digest` line must match the value above (lowercase, without colons). If it doesn't, the APK is not an official build.
+
+A build you make yourself is signed with your own machine's debug key. It cannot be installed over an official build without uninstalling it first.
 
 ## Official Distribution
 
@@ -202,10 +237,14 @@ If you install a build from another website, Telegram channel, mirror, or repack
 
 ## Installation
 
-1. Download the APK from the latest [GitHub Release](https://github.com/Deadsquirrel93/squirrel-detective/releases).
+1. Download `squirrel-detective-<version>.apk` from the latest [GitHub Release](https://github.com/Deadsquirrel93/squirrel-detective/releases). Optionally compare its SHA-256 with the one in the release notes and check the signing certificate (see [APK Signing](#apk-signing)).
 2. On the device, allow installation from the source you used to download it (browser or file manager) when prompted.
 3. Open the APK to install.
 4. Launch Squirrel Detective and tap **Start scan**.
+
+Updating from an earlier official release: install the new APK over the old one; your data is kept.
+
+Play Protect may warn about an unknown app on sideload. Tap **More details** → **Install anyway**.
 
 Required permissions on the device side:
 
@@ -214,7 +253,10 @@ Required permissions on the device side:
 
 ## Limitations
 
-- Squirrel Detective sees only what is in the manifest of each installed app. It does not, and by design cannot, observe network traffic, intercept system calls, or analyse APK bytecode at runtime.
+- Squirrel Detective sees what is in the manifest of each installed app, plus which accessibility services, device admins, keyboards and notification listeners are turned on right now. It does not, and by design cannot, observe network traffic, intercept system calls, or analyse APK bytecode at runtime.
+- The owner of an active VPN is not visible to other apps, so VPN services are always reported as declared.
+- Switching between scanning with and without system apps drops unacknowledged changes of system apps from the baseline.
+- App icons are cached for the lifetime of the process; an app updated while Squirrel Detective is running may keep its old icon until the app is restarted.
 - Static manifest analysis cannot tell you what an app *does* with a permission once it is granted, only what it *can* do.
 - `INTERNET` is a normal install-time permission and not surfaced as a finding on its own — only in combinations with sensitive read permissions.
 - The app cannot be distributed via Google Play, since `QUERY_ALL_PACKAGES` is restricted there.
