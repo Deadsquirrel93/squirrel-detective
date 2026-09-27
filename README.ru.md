@@ -128,13 +128,14 @@ Squirrel Detective построен по строгой офлайновой и 
 
 ## Технологии
 
-- Kotlin 1.9.22
-- Jetpack Compose (BOM 2024.02.00, Material 3)
-- Hilt 2.50, KSP
-- Room 2.6.1
+- Kotlin 2.4 (встроенный Kotlin в AGP), Gradle 9.8, Android Gradle Plugin 9.4
+- Jetpack Compose (BOM 2026.09.00, Material 3), edge-to-edge интерфейс
+- Hilt 2.60, KSP 2.3
+- Room 2.8
 - WorkManager + Broadcast receiver для инкрементального отслеживания изменений
 - AndroidX Navigation Compose
-- minSdk 26, targetSdk 34
+- minSdk 26, targetSdk 36, compileSdk 37
+- JUnit-тесты для оценки риска и сравнения сканирований
 
 ## Структура проекта
 
@@ -149,9 +150,9 @@ Squirrel Detective построен по строгой офлайновой и 
 
 ## Требования к сборке
 
-- Android Studio (достаточно Hedgehog и новее)
-- JDK 21 (JBR из Android Studio подходит из коробки)
-- Android SDK platform 34
+- Свежая Android Studio с поддержкой Android Gradle Plugin 9.4
+- JDK 17 или новее (JBR из Android Studio подходит из коробки)
+- Android SDK platform 37
 
 ## Сборка и запуск
 
@@ -171,6 +172,12 @@ Release-сборка:
 
 ```bash
 ./gradlew :app:installDebug
+```
+
+Юнит-тесты:
+
+```bash
+./gradlew :app:testDebugUnitTest
 ```
 
 Куда складываются артефакты:

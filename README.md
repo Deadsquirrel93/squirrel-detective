@@ -128,13 +128,14 @@ Russian and English. The current language is applied immediately and persists ac
 
 ## Tech Stack
 
-- Kotlin 1.9.22
-- Jetpack Compose (BOM 2024.02.00, Material 3)
-- Hilt 2.50, KSP
-- Room 2.6.1
+- Kotlin 2.4 (AGP built-in Kotlin), Gradle 9.8, Android Gradle Plugin 9.4
+- Jetpack Compose (BOM 2026.09.00, Material 3), edge-to-edge UI
+- Hilt 2.60, KSP 2.3
+- Room 2.8
 - WorkManager + Broadcast receiver for incremental package change tracking
 - AndroidX Navigation Compose
-- minSdk 26, targetSdk 34
+- minSdk 26, targetSdk 36, compileSdk 37
+- JUnit unit tests for the risk scorer and scan diff
 
 ## Project Structure
 
@@ -149,9 +150,9 @@ Russian and English. The current language is applied immediately and persists ac
 
 ## Build Requirements
 
-- Android Studio (Hedgehog or newer is enough)
-- JDK 21 (the JBR shipped with Android Studio works out of the box)
-- Android SDK platform 34
+- A recent Android Studio release with Android Gradle Plugin 9.4 support
+- JDK 17 or newer (the JBR shipped with Android Studio works out of the box)
+- Android SDK platform 37
 
 ## Build and Run
 
@@ -171,6 +172,12 @@ Install on a connected device:
 
 ```bash
 ./gradlew :app:installDebug
+```
+
+Run unit tests:
+
+```bash
+./gradlew :app:testDebugUnitTest
 ```
 
 Output paths:
