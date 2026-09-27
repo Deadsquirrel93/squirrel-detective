@@ -8,6 +8,8 @@ import javax.inject.Inject
 /**
  * Compares the persisted [AppSnapshot]s of the previous scan (reason ids as
  * flagged at scan time, never re-scored) with the current scan's results.
+ * Diffs with new reasons come first, then by app name (case-insensitive),
+ * then by package name.
  */
 class ComputeDiffUseCase @Inject constructor() {
 
@@ -16,7 +18,7 @@ class ComputeDiffUseCase @Inject constructor() {
         current: List<AppRiskInfo>
     ): List<AppDiff> {
         val previousByPkg = previous.associateBy { it.packageName }
-        return current.mapNotNull { now ->
+        val diffs = current.mapNotNull { now ->
             val before = previousByPkg[now.packageName] ?: return@mapNotNull null
             val addedPerms = now.permissions - before.permissions.toSet()
             val removedPerms = before.permissions - now.permissions.toSet()
@@ -31,5 +33,10 @@ class ComputeDiffUseCase @Inject constructor() {
             )
             diff.takeIf { it.isNotable }
         }
+        return diffs.sortedWith(
+            compareByDescending<AppDiff> { it.newReasons.isNotEmpty() }
+                .thenBy { it.appName.lowercase() }
+                .thenBy { it.packageName }
+        )
     }
 }
