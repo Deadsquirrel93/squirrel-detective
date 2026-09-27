@@ -9,12 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.packagespy.app.presentation.components.AppIconLoader
+import com.packagespy.app.presentation.components.LocalAppIconLoader
 import com.packagespy.app.presentation.detail.DetailScreen
 import com.packagespy.app.presentation.main.MainScreen
 import com.packagespy.app.presentation.picker.AppPickerScreen
@@ -23,20 +26,26 @@ import com.packagespy.app.presentation.theme.NutSpyTheme
 import com.packagespy.app.presentation.welcome.WelcomeScreen
 import com.packagespy.app.presentation.wiki.WikiScreen
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    @Inject
+    lateinit var appIconLoader: AppIconLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            NutSpyTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background,
-                ) {
-                    NutSpyNavHost()
+            CompositionLocalProvider(LocalAppIconLoader provides appIconLoader) {
+                NutSpyTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background,
+                    ) {
+                        NutSpyNavHost()
+                    }
                 }
             }
         }
