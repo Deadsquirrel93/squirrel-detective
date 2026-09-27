@@ -24,11 +24,17 @@
 
     <!-- Main / results -->
     <string name="results_title">Scan results</string>
-    <string name="results_subtitle_count">%1$d apps with findings</string>
+    <plurals name="results_subtitle_count">
+        <item quantity="one">%d app with findings</item>
+        <item quantity="other">%d apps with findings</item>
+    </plurals>
     <string name="results_scanning_progress">Scanning %1$d / %2$d</string>
     <string name="results_scanning">Scanning…</string>
     <string name="results_preparing">Preparing scan…</string>
-    <string name="results_changes_banner">%1$d apps changed since the last scan</string>
+    <plurals name="results_changes_banner">
+        <item quantity="one">%d app changed since the last scan</item>
+        <item quantity="other">%d apps changed since the last scan</item>
+    </plurals>
     <string name="results_empty_risky">No suspicious apps found</string>
     <string name="results_safe_section">Safe apps (%1$d)</string>
     <string name="results_rescan">Rescan</string>

@@ -44,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -97,8 +98,9 @@ fun MainScreen(
                                             stringResource(R.string.results_scanning)
                                         }
                                     }
-                                    else -> stringResource(
-                                        R.string.results_subtitle_count,
+                                    else -> pluralStringResource(
+                                        R.plurals.results_subtitle_count,
+                                        state.risky.size,
                                         state.risky.size,
                                     )
                                 }
@@ -272,7 +274,7 @@ private fun ChangesBanner(changesCount: Int) {
             )
             Spacer(Modifier.width(12.dp))
             Text(
-                stringResource(R.string.results_changes_banner, changesCount),
+                pluralStringResource(R.plurals.results_changes_banner, changesCount, changesCount),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),

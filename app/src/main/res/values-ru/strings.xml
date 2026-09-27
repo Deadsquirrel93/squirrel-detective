@@ -21,11 +21,21 @@
     <string name="picker_loading">Загружаем список приложений…</string>
 
     <string name="results_title">Результаты сканирования</string>
-    <string name="results_subtitle_count">%1$d приложений с замечаниями</string>
+    <plurals name="results_subtitle_count">
+        <item quantity="one">%d приложение с замечаниями</item>
+        <item quantity="few">%d приложения с замечаниями</item>
+        <item quantity="many">%d приложений с замечаниями</item>
+        <item quantity="other">%d приложения с замечаниями</item>
+    </plurals>
     <string name="results_scanning_progress">Сканирование %1$d / %2$d</string>
     <string name="results_scanning">Сканирование…</string>
     <string name="results_preparing">Подготовка к сканированию…</string>
-    <string name="results_changes_banner">Изменения у %1$d приложений с прошлого сканирования</string>
+    <plurals name="results_changes_banner">
+        <item quantity="one">Изменилось %d приложение с прошлого сканирования</item>
+        <item quantity="few">Изменилось %d приложения с прошлого сканирования</item>
+        <item quantity="many">Изменилось %d приложений с прошлого сканирования</item>
+        <item quantity="other">Изменилось %d приложения с прошлого сканирования</item>
+    </plurals>
     <string name="results_empty_risky">Подозрительных приложений не найдено</string>
     <string name="results_safe_section">Безопасные приложения (%1$d)</string>
     <string name="results_rescan">Пересканировать</string>
