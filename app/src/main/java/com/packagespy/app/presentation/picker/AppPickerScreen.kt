@@ -31,7 +31,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -48,6 +47,7 @@ import com.packagespy.app.domain.model.InstalledAppSummary
 import com.packagespy.app.presentation.components.AppIcon
 import com.packagespy.app.presentation.components.NutSpyBackground
 import com.packagespy.app.presentation.components.nutSpyTextFieldColors
+import com.packagespy.app.presentation.components.nutSpyTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +72,7 @@ fun AppPickerScreen(
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                    colors = nutSpyTopAppBarColors(),
                 )
             },
         ) { padding ->

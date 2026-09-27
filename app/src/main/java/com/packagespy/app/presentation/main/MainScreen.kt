@@ -2,6 +2,7 @@ package com.packagespy.app.presentation.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -37,7 +38,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +56,7 @@ import com.packagespy.app.domain.model.ScanProgress
 import com.packagespy.app.presentation.components.AppIcon
 import com.packagespy.app.presentation.components.NutSpyBackground
 import com.packagespy.app.presentation.components.RiskBadge
+import com.packagespy.app.presentation.components.nutSpyTopAppBarColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +76,7 @@ fun MainScreen(
         Scaffold(
             containerColor = Color.Transparent,
             topBar = {
-                Column {
+                Column(Modifier.background(MaterialTheme.colorScheme.background)) {
                     TopAppBar(
                         title = {
                             Column {
@@ -127,7 +128,7 @@ fun MainScreen(
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+                        colors = nutSpyTopAppBarColors(),
                     )
                     ScanProgressBar(
                         isScanning = state.isRescanning,
