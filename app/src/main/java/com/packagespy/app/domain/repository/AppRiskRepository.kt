@@ -16,8 +16,16 @@ interface AppRiskRepository {
     /** Force a fresh scan of all installed apps. Persists the snapshot. */
     suspend fun rescan(includeSystem: Boolean): List<AppRiskInfo>
 
-    /** Diff between the previous and the current snapshot. */
+    /** Diff of the last scan against the persisted baseline. */
     suspend fun diffSinceLastScan(): List<AppDiff>
+
+    /**
+     * Moves the persisted baseline for [packageNames] to the current scan.
+     * Called once the user has expanded the changes banner and seen them —
+     * until then, the baseline for a changed package stays put so the next
+     * scan still reports the same diff.
+     */
+    suspend fun acknowledgeChanges(packageNames: Set<String>)
 
     /** Lightweight installed-apps list used by the picker. */
     suspend fun listInstalled(includeSystem: Boolean): List<InstalledAppSummary>
