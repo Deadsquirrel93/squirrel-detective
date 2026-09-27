@@ -39,6 +39,9 @@ The detector does not rely on a remote signature feed; everything is decided loc
 - `BIND_NOTIFICATION_LISTENER_SERVICE` — reads every notification, including SMS codes and bank alerts
 - `BIND_VPN_SERVICE` — routes the entire device traffic through the app
 - `BIND_INPUT_METHOD` — keyboard service that sees every keystroke
+
+The five `BIND_*` capabilities above are detected from the components the app actually declares — a `<service>` (or, for device admin, a `<receiver>`) protected by that permission. Merely listing a `BIND_*` permission in `<uses-permission>` grants nothing to a third-party app and is not flagged.
+
 - `SYSTEM_ALERT_WINDOW` — overlays drawn on top of other apps
 - `PACKAGE_USAGE_STATS` — usage history of every app
 - `REQUEST_INSTALL_PACKAGES` — install APKs outside Google Play
@@ -68,7 +71,9 @@ The detector does not rely on a remote signature feed; everything is decided loc
 
 ### Whitelist
 
-Launchers, app stores, file managers, antivirus apps and well-known system tools are recognised and downgraded to `EXPECTED` (green) with an explanation, so the report stays focused on apps that genuinely deserve a closer look.
+Launchers, app stores, file managers and antivirus apps are recognised and downgraded to `EXPECTED` (green) with an explanation, so the report stays focused on apps that genuinely deserve a closer look.
+
+A known package name alone is not enough — any sideloaded APK can reuse it. The downgrade applies only to system apps and to apps installed from a trusted store (Google Play, Galaxy Store, AppGallery, Xiaomi, Amazon, RuStore, F-Droid, Aurora Store). On Android 11+ the store is taken from the package that actually performed the install, which the installed app cannot spoof.
 
 ## Product Highlights
 
