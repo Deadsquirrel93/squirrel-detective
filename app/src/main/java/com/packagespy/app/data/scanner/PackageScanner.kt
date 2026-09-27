@@ -34,10 +34,11 @@ class PackageScanner @Inject constructor(
         }
         val total = packages.size
         onProgress?.invoke(0, total)
+        val receiverIndex = buildReceiverActionIndex(queryReceiverActionHits(packageName = null))
         val result = ArrayList<AppRiskInfo>(total)
         packages.forEachIndexed { index, info ->
             try {
-                result += buildRiskInfo(info)
+                result += buildRiskInfo(info, receiverIndex)
             } catch (_: Throwable) {
                 // Defensive: never let one broken package abort the whole scan.
             }
@@ -48,7 +49,8 @@ class PackageScanner @Inject constructor(
 
     fun scanSingle(packageName: String): AppRiskInfo? {
         val info = packageInfo(packageName) ?: return null
-        return runCatching { buildRiskInfo(info) }.getOrNull()
+        val receiverIndex = buildReceiverActionIndex(queryReceiverActionHits(packageName))
+        return runCatching { buildRiskInfo(info, receiverIndex) }.getOrNull()
     }
 
     fun listInstalled(includeSystem: Boolean): List<InstalledAppSummary> {
@@ -99,7 +101,10 @@ class PackageScanner @Inject constructor(
         return (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
     }
 
-    private fun buildRiskInfo(info: PackageInfo): AppRiskInfo {
+    private fun buildRiskInfo(
+        info: PackageInfo,
+        receiverIndex: Map<ReceiverKey, List<String>>,
+    ): AppRiskInfo {
         val appInfo = info.applicationInfo
         val appName = appInfo?.loadLabel(pm)?.toString() ?: info.packageName
         val isSystemApp = appInfo != null &&
@@ -110,9 +115,14 @@ class PackageScanner @Inject constructor(
         val installer = installerOf(info.packageName)
         val permissions = info.requestedPermissions?.toList().orEmpty()
         val receivers = info.receivers.orEmpty().map { activityInfo ->
+            val name = activityInfo.name ?: ""
             ReceiverInfo(
-                name = activityInfo.name ?: "",
-                actions = receiverActions(info.packageName, activityInfo.name),
+                name = name,
+                actions = if (name.isBlank()) {
+                    emptyList()
+                } else {
+                    receiverIndex[ReceiverKey(info.packageName, name)].orEmpty()
+                },
             )
         }
         val hasLauncher = pm.getLaunchIntentForPackage(info.packageName) != null
@@ -146,44 +156,51 @@ class PackageScanner @Inject constructor(
     }
 
     /**
-     * Resolve the intent-filter actions registered for a manifest receiver.
+     * Resolves, for each of [WATCHED_RECEIVER_ACTIONS], the manifest receivers
+     * that would handle it — with exactly one `queryBroadcastReceivers` call
+     * per action, regardless of how many packages/receivers are being scanned.
      *
      * PackageManager doesn't return intent-filters via GET_RECEIVERS alone, so
-     * we instead query each "package-related" action and check whether this
-     * receiver is among the resolvers.
+     * we instead query each "package-related" action and check who resolves it.
+     *
+     * @param packageName restrict the query to a single package, or `null` to
+     *   resolve across all installed packages (used by [scanAll]).
      */
-    private fun receiverActions(packageName: String, receiverName: String?): List<String> {
-        if (receiverName.isNullOrBlank()) return emptyList()
-        val candidates = listOf(
-            RiskScorer.ACTION_PACKAGE_ADDED,
-            RiskScorer.ACTION_PACKAGE_REMOVED,
-            RiskScorer.ACTION_BOOT_COMPLETED,
-            "android.intent.action.PACKAGE_REPLACED",
-            "android.intent.action.PACKAGE_CHANGED",
-            "android.intent.action.PACKAGE_FULLY_REMOVED",
-        )
-        val result = mutableListOf<String>()
-        for (action in candidates) {
+    private fun queryReceiverActionHits(packageName: String?): Map<String, List<ReceiverKey>> {
+        val hits = mutableMapOf<String, List<ReceiverKey>>()
+        for (action in WATCHED_RECEIVER_ACTIONS) {
             val intent = android.content.Intent(action).apply {
                 if (action.startsWith("android.intent.action.PACKAGE_")) {
                     data = android.net.Uri.fromParts("package", "dummy.pkg", null)
                 }
+                if (packageName != null) {
+                    setPackage(packageName)
+                }
             }
-            val resolvers = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.queryBroadcastReceivers(
-                    intent,
-                    PackageManager.ResolveInfoFlags.of(0L),
-                )
-            } else {
-                @Suppress("DEPRECATION")
-                pm.queryBroadcastReceivers(intent, 0)
+            val resolvers = try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    pm.queryBroadcastReceivers(
+                        intent,
+                        PackageManager.ResolveInfoFlags.of(0L),
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    pm.queryBroadcastReceivers(intent, 0)
+                }
+            } catch (_: Exception) {
+                emptyList()
             }
-            val match = resolvers.any {
-                it.activityInfo?.packageName == packageName &&
-                    it.activityInfo?.name == receiverName
+            hits[action] = resolvers.mapNotNull { resolveInfo ->
+                val activityInfo = resolveInfo.activityInfo
+                val resolvedPackageName = activityInfo?.packageName
+                val resolvedName = activityInfo?.name
+                if (resolvedPackageName != null && resolvedName != null) {
+                    ReceiverKey(resolvedPackageName, resolvedName)
+                } else {
+                    null
+                }
             }
-            if (match) result += action
         }
-        return result
+        return hits
     }
 }
