@@ -1,6 +1,7 @@
 package com.packagespy.app.domain.usecase
 
 import android.Manifest
+import com.packagespy.app.domain.model.ActiveCapability
 import com.packagespy.app.domain.model.AppRiskInfo
 import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.ReceiverInfo
@@ -33,6 +34,7 @@ class RiskScorerTest {
         targetSdk: Int = 34,
         hasLauncherIntent: Boolean = true,
         trustSource: String? = null,
+        activeCapabilities: Set<ActiveCapability> = emptySet(),
     ) = RiskScorer.Inputs(
         packageName = packageName,
         appName = appName,
@@ -46,6 +48,7 @@ class RiskScorerTest {
         targetSdk = targetSdk,
         hasLauncherIntent = hasLauncherIntent,
         trustSource = trustSource,
+        activeCapabilities = activeCapabilities,
     )
 
     private fun ids(result: AppRiskInfo): List<ThreatId> = result.reasons.map { it.id }
@@ -223,13 +226,13 @@ class RiskScorerTest {
                 "BIND_ACCESSIBILITY_SERVICE via service",
                 services = listOf(DeclaredService("Svc", RiskScorer.BIND_ACCESSIBILITY_SERVICE)),
                 expectedId = ThreatId.BIND_ACCESSIBILITY,
-                expectedLevel = RiskLevel.RED,
+                expectedLevel = RiskLevel.YELLOW,
             ),
             ComponentRuleCase(
                 "BIND_DEVICE_ADMIN via receiver",
                 receivers = listOf(ReceiverInfo("Rcvr", emptyList(), RiskScorer.BIND_DEVICE_ADMIN)),
                 expectedId = ThreatId.DEVICE_ADMIN,
-                expectedLevel = RiskLevel.RED,
+                expectedLevel = RiskLevel.YELLOW,
             ),
             ComponentRuleCase(
                 "BIND_NOTIFICATION_LISTENER via service",
@@ -300,14 +303,124 @@ class RiskScorerTest {
     }
 
     @Test
-    fun `system app with an accessibility service is downgraded to YELLOW`() {
+    fun `system app with an enabled accessibility service is downgraded to YELLOW`() {
         val result = scorer.score(
             inputs(
                 isSystemApp = true,
                 services = listOf(DeclaredService("Svc", RiskScorer.BIND_ACCESSIBILITY_SERVICE)),
+                activeCapabilities = setOf(ActiveCapability.ACCESSIBILITY),
             )
         )
         assertEquals(RiskLevel.YELLOW, result.riskLevel)
+    }
+
+    // ---- 4c: active capabilities escalate a declared component to RED ----
+
+    private data class ActiveCapabilityCase(
+        val label: String,
+        val capability: ActiveCapability,
+        val declaredId: ThreatId,
+        val activeId: ThreatId,
+        val services: List<DeclaredService> = emptyList(),
+        val receivers: List<ReceiverInfo> = emptyList(),
+    )
+
+    private val activeCapabilityCases = listOf(
+        ActiveCapabilityCase(
+            "accessibility",
+            ActiveCapability.ACCESSIBILITY,
+            ThreatId.BIND_ACCESSIBILITY,
+            ThreatId.ACCESSIBILITY_ENABLED,
+            services = listOf(DeclaredService("Svc", RiskScorer.BIND_ACCESSIBILITY_SERVICE)),
+        ),
+        ActiveCapabilityCase(
+            "device admin",
+            ActiveCapability.DEVICE_ADMIN,
+            ThreatId.DEVICE_ADMIN,
+            ThreatId.DEVICE_ADMIN_ACTIVE,
+            receivers = listOf(ReceiverInfo("Rcvr", emptyList(), RiskScorer.BIND_DEVICE_ADMIN)),
+        ),
+        ActiveCapabilityCase(
+            "notification listener",
+            ActiveCapability.NOTIFICATION_LISTENER,
+            ThreatId.NOTIFICATION_LISTENER,
+            ThreatId.NOTIFICATION_LISTENER_ENABLED,
+            services = listOf(DeclaredService("Svc", RiskScorer.BIND_NOTIFICATION_LISTENER)),
+        ),
+        ActiveCapabilityCase(
+            "input method",
+            ActiveCapability.INPUT_METHOD,
+            ThreatId.INPUT_METHOD_SERVICE,
+            ThreatId.INPUT_METHOD_ENABLED,
+            services = listOf(DeclaredService("Svc", RiskScorer.BIND_INPUT_METHOD)),
+        ),
+    )
+
+    @Test
+    fun `declared component plus an enabled capability yields both reasons and RED`() {
+        for (case in activeCapabilityCases) {
+            val result = scorer.score(
+                inputs(
+                    services = case.services,
+                    receivers = case.receivers,
+                    activeCapabilities = setOf(case.capability),
+                )
+            )
+            assertEquals("case: ${case.label}", listOf(case.declaredId, case.activeId), ids(result))
+            assertEquals("case: ${case.label}", RiskLevel.RED, result.riskLevel)
+        }
+    }
+
+    @Test
+    fun `an enabled capability without a declared component is still flagged RED`() {
+        for (case in activeCapabilityCases) {
+            val result = scorer.score(inputs(activeCapabilities = setOf(case.capability)))
+            assertEquals("case: ${case.label}", listOf(case.activeId), ids(result))
+            assertEquals("case: ${case.label}", RiskLevel.RED, result.riskLevel)
+        }
+    }
+
+    @Test
+    fun `an enabled capability on a whitelisted launcher is downgraded to GREEN`() {
+        val result = scorer.score(
+            inputs(
+                packageName = "com.android.launcher3",
+                isSystemApp = true,
+                trustSource = null,
+                activeCapabilities = setOf(ActiveCapability.ACCESSIBILITY),
+            )
+        )
+        assertEquals(RiskLevel.GREEN, result.riskLevel)
+        assertTrue(ThreatId.ACCESSIBILITY_ENABLED in ids(result))
+    }
+
+    @Test
+    fun `sideloaded app with an enabled accessibility service is flagged as unknown installer`() {
+        val result = scorer.score(
+            inputs(
+                installerPackage = null,
+                services = listOf(DeclaredService("Svc", RiskScorer.BIND_ACCESSIBILITY_SERVICE)),
+                activeCapabilities = setOf(ActiveCapability.ACCESSIBILITY),
+            )
+        )
+        assertTrue(ThreatId.UNKNOWN_INSTALLER in ids(result))
+    }
+
+    @Test
+    fun `declared accessibility and input method with only the input method enabled preserves order`() {
+        val result = scorer.score(
+            inputs(
+                services = listOf(
+                    DeclaredService("A11ySvc", RiskScorer.BIND_ACCESSIBILITY_SERVICE),
+                    DeclaredService("ImeSvc", RiskScorer.BIND_INPUT_METHOD),
+                ),
+                activeCapabilities = setOf(ActiveCapability.INPUT_METHOD),
+            )
+        )
+        assertEquals(
+            listOf(ThreatId.BIND_ACCESSIBILITY, ThreatId.INPUT_METHOD_SERVICE, ThreatId.INPUT_METHOD_ENABLED),
+            ids(result),
+        )
     }
 
     // ---- 5: "+INTERNET" combos without INTERNET are not flagged ----

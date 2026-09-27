@@ -98,6 +98,8 @@
     <string name="threat_get_accounts_full">GET_ACCOUNTS returns the list of accounts (Google, mail, etc). Together with internet access, it can be used for de-anonymization.</string>
     <string name="threat_accessibility_short">Declares an Accessibility service</string>
     <string name="threat_accessibility_full">The app contains a service protected by BIND_ACCESSIBILITY_SERVICE. Once you turn it on in Accessibility settings, it can read the contents of any screen and emulate gestures. This is the most powerful surveillance channel on Android — turn it on only for trusted apps.</string>
+    <string name="threat_accessibility_enabled_short">Accessibility service is turned on</string>
+    <string name="threat_accessibility_enabled_full">One of this app\'s accessibility services is turned on right now. It can read everything shown on screen, including passwords and messages, and tap or type on your behalf. If you don\'t know why this app needs it, turn it off in Settings → Accessibility.</string>
     <string name="threat_receiver_added_short">Reacts to new app installs</string>
     <string name="threat_receiver_added_full">A receiver for ACTION_PACKAGE_ADDED is declared in the manifest. The app gets notified every time you install something.</string>
     <string name="threat_receiver_removed_short">Reacts to app removals</string>
@@ -123,12 +125,18 @@
     <string name="threat_location_internet_full">ACCESS_FINE_LOCATION or ACCESS_BACKGROUND_LOCATION with internet access lets the app track your movements continuously.</string>
     <string name="threat_device_admin_short">Declares a Device Admin receiver</string>
     <string name="threat_device_admin_full">The app contains a receiver protected by BIND_DEVICE_ADMIN. Once you activate it as a device admin, it can lock the screen, enforce a password policy, and on older Android versions even wipe the device. Legitimate for MDM only.</string>
+    <string name="threat_device_admin_active_short">Active device admin</string>
+    <string name="threat_device_admin_active_full">This app is activated as a device administrator right now. It can lock the screen, enforce password rules and, on older Android versions, wipe the device — and it can\'t be uninstalled until you deactivate it. If this isn\'t a work or MDM app, deactivate it in the security settings (Device admin apps).</string>
     <string name="threat_notifications_short">Declares a notification listener</string>
     <string name="threat_notifications_full">The app contains a service protected by BIND_NOTIFICATION_LISTENER_SERVICE. Once you grant it notification access, it sees every notification, including sensitive ones from banking apps and messengers.</string>
+    <string name="threat_notifications_enabled_short">Has notification access</string>
+    <string name="threat_notifications_enabled_full">Notification access is granted to this app right now. It sees every notification as it arrives — including one-time codes, banking alerts and message previews — and can dismiss them. Revoke it in Settings (Notification access) if you don\'t need it.</string>
     <string name="threat_vpn_short">Declares a VPN service</string>
     <string name="threat_vpn_full">The app contains a service protected by BIND_VPN_SERVICE. Once you start its VPN, all device traffic goes through this app — it can inspect or modify everything you send.</string>
     <string name="threat_input_method_short">Declares a keyboard (input method)</string>
     <string name="threat_input_method_full">The app contains a service protected by BIND_INPUT_METHOD. Once you enable it as a keyboard, it can capture every key you type. Only enable keyboards from trusted sources.</string>
+    <string name="threat_input_method_enabled_short">Keyboard is enabled</string>
+    <string name="threat_input_method_enabled_full">This app\'s keyboard is enabled in system settings. While it is the active keyboard it sees everything you type, including passwords and card numbers, and you can switch to it in one tap. Disable keyboards you don\'t use in Settings → System → Keyboard.</string>
     <string name="threat_external_storage_short">Full file system access</string>
     <string name="threat_external_storage_full">MANAGE_EXTERNAL_STORAGE grants read/write access to the entire shared storage — including private app folders on older Android.</string>
     <string name="threat_write_settings_short">Modifies system settings</string>

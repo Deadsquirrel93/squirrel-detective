@@ -2,6 +2,7 @@ package com.packagespy.app.domain.usecase
 
 import android.Manifest
 import com.packagespy.app.R
+import com.packagespy.app.domain.model.ActiveCapability
 import com.packagespy.app.domain.model.AppRiskInfo
 import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.KnownLegitimateApps
@@ -19,6 +20,15 @@ import javax.inject.Singleton
  * plus an aggregate [RiskLevel]. Since stage 02, BIND_* capabilities are
  * detected from declared service/receiver components rather than from
  * `uses-permission`, which any app can declare without effect.
+ *
+ * Since stage 04, declaring one of those components (accessibility, device
+ * admin, notification listener, IME) only means the app *can* request the
+ * capability — it does nothing until the user turns it on in system
+ * settings, so a declared component alone is downgraded to YELLOW. If
+ * [Inputs.activeCapabilities] shows the capability is enabled right now, a
+ * separate RED [ThreatReason] is added next to the declared one (or on its
+ * own, if the component wasn't even declared — the enabled state is the
+ * source of truth).
  */
 @Singleton
 class RiskScorer @Inject constructor() {
@@ -36,6 +46,7 @@ class RiskScorer @Inject constructor() {
         val targetSdk: Int = 0,
         val hasLauncherIntent: Boolean = true,
         val trustSource: String? = null,
+        val activeCapabilities: Set<ActiveCapability> = emptySet(),
     )
 
     fun score(inputs: Inputs): AppRiskInfo {
@@ -104,6 +115,14 @@ class RiskScorer @Inject constructor() {
                 ThreatId.BIND_ACCESSIBILITY,
                 R.string.threat_accessibility_short,
                 R.string.threat_accessibility_full,
+                RiskLevel.YELLOW,
+            )
+        }
+        if (ActiveCapability.ACCESSIBILITY in inputs.activeCapabilities) {
+            reasons += reason(
+                ThreatId.ACCESSIBILITY_ENABLED,
+                R.string.threat_accessibility_enabled_short,
+                R.string.threat_accessibility_enabled_full,
                 RiskLevel.RED,
             )
         }
@@ -124,6 +143,14 @@ class RiskScorer @Inject constructor() {
                 ThreatId.DEVICE_ADMIN,
                 R.string.threat_device_admin_short,
                 R.string.threat_device_admin_full,
+                RiskLevel.YELLOW,
+            )
+        }
+        if (ActiveCapability.DEVICE_ADMIN in inputs.activeCapabilities) {
+            reasons += reason(
+                ThreatId.DEVICE_ADMIN_ACTIVE,
+                R.string.threat_device_admin_active_short,
+                R.string.threat_device_admin_active_full,
                 RiskLevel.RED,
             )
         }
@@ -134,6 +161,14 @@ class RiskScorer @Inject constructor() {
                 R.string.threat_notifications_short,
                 R.string.threat_notifications_full,
                 RiskLevel.YELLOW,
+            )
+        }
+        if (ActiveCapability.NOTIFICATION_LISTENER in inputs.activeCapabilities) {
+            reasons += reason(
+                ThreatId.NOTIFICATION_LISTENER_ENABLED,
+                R.string.threat_notifications_enabled_short,
+                R.string.threat_notifications_enabled_full,
+                RiskLevel.RED,
             )
         }
 
@@ -152,6 +187,14 @@ class RiskScorer @Inject constructor() {
                 R.string.threat_input_method_short,
                 R.string.threat_input_method_full,
                 RiskLevel.YELLOW,
+            )
+        }
+        if (ActiveCapability.INPUT_METHOD in inputs.activeCapabilities) {
+            reasons += reason(
+                ThreatId.INPUT_METHOD_ENABLED,
+                R.string.threat_input_method_enabled_short,
+                R.string.threat_input_method_enabled_full,
+                RiskLevel.RED,
             )
         }
 

@@ -51,6 +51,30 @@ class SnapshotMapperTest {
     }
 
     @Test
+    fun `round-trip preserves the new enabled-capability reason ids`() {
+        val info = appInfo(
+            reasons = listOf(
+                reason(ThreatId.ACCESSIBILITY_ENABLED, RiskLevel.RED),
+                reason(ThreatId.DEVICE_ADMIN_ACTIVE, RiskLevel.RED),
+                reason(ThreatId.NOTIFICATION_LISTENER_ENABLED, RiskLevel.RED),
+                reason(ThreatId.INPUT_METHOD_ENABLED, RiskLevel.RED),
+            ),
+        )
+
+        val snapshot = info.toEntity(scannedAtMillis = 1_000L).toSnapshot()
+
+        assertEquals(
+            setOf(
+                ThreatId.ACCESSIBILITY_ENABLED,
+                ThreatId.DEVICE_ADMIN_ACTIVE,
+                ThreatId.NOTIFICATION_LISTENER_ENABLED,
+                ThreatId.INPUT_METHOD_ENABLED,
+            ),
+            snapshot.reasonIds,
+        )
+    }
+
+    @Test
     fun `unknown reason id is dropped`() {
         val entity = AppSnapshotEntity(
             packageName = "com.example.app",

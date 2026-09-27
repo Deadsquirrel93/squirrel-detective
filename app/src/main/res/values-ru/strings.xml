@@ -96,6 +96,8 @@
     <string name="threat_get_accounts_full">GET_ACCOUNTS возвращает список аккаунтов (Google, почта и т.д.). В сочетании с интернет-доступом может использоваться для деанонимизации.</string>
     <string name="threat_accessibility_short">Объявляет службу специальных возможностей</string>
     <string name="threat_accessibility_full">Приложение содержит службу, защищённую BIND_ACCESSIBILITY_SERVICE. Если включить её в настройках специальных возможностей, она сможет читать содержимое экрана любого приложения и эмулировать жесты. Это самый мощный канал слежки на Android — включайте такое только проверенным приложениям.</string>
+    <string name="threat_accessibility_enabled_short">Служба специальных возможностей включена</string>
+    <string name="threat_accessibility_enabled_full">Одна из служб специальных возможностей этого приложения сейчас включена. Она может читать всё, что показано на экране, включая пароли и сообщения, а также нажимать и вводить текст за вас. Если непонятно, зачем это приложению, выключите её в Настройки → Специальные возможности.</string>
     <string name="threat_receiver_added_short">Реагирует на установку новых приложений</string>
     <string name="threat_receiver_added_full">В манифесте объявлен receiver на ACTION_PACKAGE_ADDED. Приложение получает уведомление каждый раз, когда пользователь устанавливает что-то новое.</string>
     <string name="threat_receiver_removed_short">Реагирует на удаление приложений</string>
@@ -121,12 +123,18 @@
     <string name="threat_location_internet_full">ACCESS_FINE_LOCATION или ACCESS_BACKGROUND_LOCATION вместе с интернетом позволяют непрерывно отслеживать ваши перемещения.</string>
     <string name="threat_device_admin_short">Содержит модуль администратора устройства</string>
     <string name="threat_device_admin_full">Приложение содержит receiver, защищённый BIND_DEVICE_ADMIN. Если активировать его как администратора устройства, оно сможет блокировать экран, навязывать политику паролей, а на старом Android — даже сбросить устройство. Легитимно только для MDM.</string>
+    <string name="threat_device_admin_active_short">Активный администратор устройства</string>
+    <string name="threat_device_admin_active_full">Это приложение сейчас активировано как администратор устройства. Оно может блокировать экран, навязывать правила паролей, а на старом Android — сбросить устройство; удалить его нельзя, пока не отключите права. Если это не рабочее или MDM-приложение, отключите его в настройках безопасности (Приложения администратора устройства).</string>
     <string name="threat_notifications_short">Объявляет службу чтения уведомлений</string>
     <string name="threat_notifications_full">Приложение содержит службу, защищённую BIND_NOTIFICATION_LISTENER_SERVICE. Если выдать ей доступ к уведомлениям, она увидит все уведомления, в том числе чувствительные — от банков и мессенджеров.</string>
+    <string name="threat_notifications_enabled_short">Имеет доступ к уведомлениям</string>
+    <string name="threat_notifications_enabled_full">Этому приложению сейчас выдан доступ к уведомлениям. Оно видит каждое уведомление в момент поступления — включая одноразовые коды, банковские оповещения и превью сообщений — и может их скрывать. Если это не нужно, отзовите доступ в Настройках (Доступ к уведомлениям).</string>
     <string name="threat_vpn_short">Объявляет VPN-службу</string>
     <string name="threat_vpn_full">Приложение содержит службу, защищённую BIND_VPN_SERVICE. Если запустить его VPN, весь трафик устройства пойдёт через это приложение — оно сможет анализировать или менять всё, что вы отправляете.</string>
     <string name="threat_input_method_short">Объявляет клавиатуру (способ ввода)</string>
     <string name="threat_input_method_full">Приложение содержит службу, защищённую BIND_INPUT_METHOD. Если включить её как клавиатуру, она сможет перехватывать каждую нажатую клавишу. Включайте клавиатуры только из проверенных источников.</string>
+    <string name="threat_input_method_enabled_short">Клавиатура включена</string>
+    <string name="threat_input_method_enabled_full">Клавиатура этого приложения включена в системных настройках. Пока она активна, она видит всё, что вы вводите, включая пароли и номера карт, а переключиться на неё можно одним нажатием. Отключите неиспользуемые клавиатуры в Настройки → Система → Клавиатура.</string>
     <string name="threat_external_storage_short">Полный доступ к файловой системе</string>
     <string name="threat_external_storage_full">MANAGE_EXTERNAL_STORAGE даёт чтение/запись всего общего хранилища — включая приватные папки приложений на старом Android.</string>
     <string name="threat_write_settings_short">Меняет системные настройки</string>
