@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.packagespy.app"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.packagespy.app"
@@ -61,7 +61,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.hilt.lifecycle.viewmodel.compose)
 
     // Room
     implementation(libs.androidx.room.runtime)
@@ -70,9 +70,6 @@ dependencies {
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
-
-    // Coil for icon loading
-    implementation(libs.coil.compose)
 
     // Tests
     testImplementation(libs.junit)
