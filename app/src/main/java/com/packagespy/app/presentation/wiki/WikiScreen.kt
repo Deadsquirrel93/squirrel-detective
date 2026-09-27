@@ -68,6 +68,7 @@ private val WIKI_CATEGORIES: List<WikiCategory> = listOf(
     WikiCategory(
         titleRes = R.string.wiki_category_services,
         entries = listOf(
+            WikiEntry(R.string.wiki_declared_vs_enabled_title, R.string.wiki_declared_vs_enabled_body),
             WikiEntry(R.string.wiki_accessibility_title, R.string.wiki_accessibility_body),
             WikiEntry(R.string.wiki_device_admin_title, R.string.wiki_device_admin_body),
             WikiEntry(R.string.wiki_notif_listener_title, R.string.wiki_notif_listener_body),

@@ -185,6 +185,9 @@
     <string name="wiki_accessibility_title">BIND_ACCESSIBILITY_SERVICE</string>
     <string name="wiki_accessibility_body">Lets the app read every screen, every text field, and emulate taps and gestures. The most powerful surveillance channel on Android. Grant it only to tools you fully trust (screen readers, password managers).</string>
 
+    <string name="wiki_declared_vs_enabled_title">Declared vs. turned on</string>
+    <string name="wiki_declared_vs_enabled_body">Accessibility services, device admins, notification listeners, keyboards and VPNs only work after you turn them on in system settings. An app that merely declares one is marked yellow. If Squirrel Detective sees it turned on right now, the app gets a separate red finding. Android doesn\'t tell other apps which app owns the active VPN, so VPN apps are always shown as declared.</string>
+
     <string name="wiki_device_admin_title">BIND_DEVICE_ADMIN</string>
     <string name="wiki_device_admin_body">Device-administrator access can lock the screen, force a password policy, disable the camera and on older Android even wipe the device. Legitimate only for MDM and corporate device management.</string>
 
