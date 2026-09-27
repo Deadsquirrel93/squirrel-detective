@@ -134,7 +134,7 @@ Squirrel Detective построен по строгой офлайновой и 
 - Room 2.8
 - WorkManager + Broadcast receiver для инкрементального отслеживания изменений
 - AndroidX Navigation Compose
-- minSdk 26, targetSdk 36, compileSdk 37
+- minSdk 26, targetSdk 37, compileSdk 37
 - JUnit-тесты для оценки риска и сравнения сканирований
 
 ## Структура проекта

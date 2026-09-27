@@ -134,7 +134,7 @@ Russian and English. The current language is applied immediately and persists ac
 - Room 2.8
 - WorkManager + Broadcast receiver for incremental package change tracking
 - AndroidX Navigation Compose
-- minSdk 26, targetSdk 36, compileSdk 37
+- minSdk 26, targetSdk 37, compileSdk 37
 - JUnit unit tests for the risk scorer and scan diff
 
 ## Project Structure
