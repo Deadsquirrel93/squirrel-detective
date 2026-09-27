@@ -6,6 +6,7 @@ import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
 import com.packagespy.app.domain.model.AppRiskInfo
+import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.InstalledAppSummary
 import com.packagespy.app.domain.model.ReceiverInfo
 import com.packagespy.app.domain.usecase.RiskScorer
@@ -73,23 +74,21 @@ class PackageScanner @Inject constructor(
     }
 
     private fun installedPackages(): List<PackageInfo> {
-        val flags = PackageManager.GET_PERMISSIONS or PackageManager.GET_RECEIVERS
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(flags.toLong()))
+            pm.getInstalledPackages(PackageManager.PackageInfoFlags.of(SCAN_FLAGS.toLong()))
         } else {
             @Suppress("DEPRECATION")
-            pm.getInstalledPackages(flags)
+            pm.getInstalledPackages(SCAN_FLAGS)
         }
     }
 
     private fun packageInfo(packageName: String): PackageInfo? {
-        val flags = PackageManager.GET_PERMISSIONS or PackageManager.GET_RECEIVERS
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(flags.toLong()))
+                pm.getPackageInfo(packageName, PackageManager.PackageInfoFlags.of(SCAN_FLAGS.toLong()))
             } else {
                 @Suppress("DEPRECATION")
-                pm.getPackageInfo(packageName, flags)
+                pm.getPackageInfo(packageName, SCAN_FLAGS)
             }
         } catch (_: PackageManager.NameNotFoundException) {
             null
@@ -123,7 +122,11 @@ class PackageScanner @Inject constructor(
                 } else {
                     receiverIndex[ReceiverKey(info.packageName, name)].orEmpty()
                 },
+                permission = activityInfo.permission,
             )
+        }
+        val services = info.services.orEmpty().map { serviceInfo ->
+            DeclaredService(name = serviceInfo.name ?: "", permission = serviceInfo.permission)
         }
         val hasLauncher = pm.getLaunchIntentForPackage(info.packageName) != null
         return riskScorer.score(
@@ -135,6 +138,7 @@ class PackageScanner @Inject constructor(
                 installerPackage = installer,
                 permissions = permissions,
                 receivers = receivers,
+                services = services,
                 isDebuggable = isDebuggable,
                 targetSdk = targetSdk,
                 hasLauncherIntent = hasLauncher,
@@ -202,5 +206,10 @@ class PackageScanner @Inject constructor(
             }
         }
         return hits
+    }
+
+    private companion object {
+        private const val SCAN_FLAGS =
+            PackageManager.GET_PERMISSIONS or PackageManager.GET_RECEIVERS or PackageManager.GET_SERVICES
     }
 }
