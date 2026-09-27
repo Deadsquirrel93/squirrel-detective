@@ -2,7 +2,8 @@ package com.packagespy.app.presentation.settings
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.packagespy.app.R
 import com.packagespy.app.core.localization.LocaleManager
@@ -32,13 +34,18 @@ import com.packagespy.app.presentation.components.NutSpyBackground
 import com.packagespy.app.presentation.components.NutSpyCard
 import com.packagespy.app.presentation.components.nutSpyTopAppBarColors
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel(),
 ) {
     val languageCode by viewModel.languageCode.collectAsStateWithLifecycle()
+
+    LifecycleResumeEffect(Unit) {
+        viewModel.refresh()
+        onPauseOrDispose { }
+    }
 
     NutSpyBackground {
         Scaffold(
@@ -80,10 +87,16 @@ fun SettingsScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
+                        FilterChip(
+                            selected = languageCode == null,
+                            onClick = { viewModel.setLanguage(null) },
+                            label = { Text(stringResource(R.string.language_system)) },
+                        )
                         FilterChip(
                             selected = languageCode == LocaleManager.RUSSIAN,
                             onClick = { viewModel.setLanguage(LocaleManager.RUSSIAN) },

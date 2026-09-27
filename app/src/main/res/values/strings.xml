@@ -76,7 +76,8 @@
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="language_title">Language</string>
-    <string name="language_body">Choose the app language. Russian is enabled by default.</string>
+    <string name="language_body">Choose the app language. By default the app follows the system language.</string>
+    <string name="language_system">System default</string>
     <string name="language_russian">Русский</string>
     <string name="language_english">English</string>
     <string name="about_title">About Squirrel Detective</string>

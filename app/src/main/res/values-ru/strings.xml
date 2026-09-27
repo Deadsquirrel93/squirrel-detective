@@ -75,7 +75,8 @@
 
     <string name="settings_title">Настройки</string>
     <string name="language_title">Язык</string>
-    <string name="language_body">Выберите язык приложения. По умолчанию используется русский.</string>
+    <string name="language_body">Выберите язык приложения. По умолчанию используется язык системы.</string>
+    <string name="language_system">Как в системе</string>
     <string name="language_russian">Русский</string>
     <string name="language_english">English</string>
     <string name="about_title">О Squirrel Detective</string>

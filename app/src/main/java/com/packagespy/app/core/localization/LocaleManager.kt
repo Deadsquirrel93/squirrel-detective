@@ -1,13 +1,9 @@
 package com.packagespy.app.core.localization
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,34 +11,26 @@ import javax.inject.Singleton
 class LocaleManager @Inject constructor(
     @ApplicationContext context: Context
 ) {
-    private val prefs: SharedPreferences =
-        context.getSharedPreferences("nutspy_locale", Context.MODE_PRIVATE)
-
-    private val _languageCode = MutableStateFlow(DEFAULT_LANGUAGE)
-    val languageCode: StateFlow<String> = _languageCode.asStateFlow()
 
     init {
-        val stored = prefs.getString(KEY_LANGUAGE_CODE, null)
-        applyLanguage(stored ?: DEFAULT_LANGUAGE, persist = stored == null)
+        // One-time cleanup of the legacy SharedPreferences file that used to force a
+        // language onto every install. Per-app locale state now lives with AppCompat.
+        context.deleteSharedPreferences("nutspy_locale")
     }
 
-    fun setLanguage(languageCode: String) {
-        applyLanguage(languageCode, persist = true)
-    }
+    /** The currently applied language, or `null` if the app follows the system language. */
+    fun currentLanguage(): String? =
+        normalizeLanguageTag(AppCompatDelegate.getApplicationLocales().toLanguageTags())
 
-    private fun applyLanguage(languageCode: String, persist: Boolean) {
-        _languageCode.value = languageCode
-        AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(languageCode))
-        if (persist) {
-            prefs.edit().putString(KEY_LANGUAGE_CODE, languageCode).apply()
-        }
+    /** Sets the app language, or clears the override (follow system) when [code] is `null`. */
+    fun setLanguage(code: String?) {
+        AppCompatDelegate.setApplicationLocales(
+            code?.let { LocaleListCompat.forLanguageTags(it) } ?: LocaleListCompat.getEmptyLocaleList()
+        )
     }
 
     companion object {
-        const val DEFAULT_LANGUAGE = "ru"
         const val ENGLISH = "en"
         const val RUSSIAN = "ru"
-
-        private const val KEY_LANGUAGE_CODE = "language_code"
     }
 }
