@@ -81,7 +81,7 @@ A known package name alone is not enough — any sideloaded APK can reuse it. Th
 - Open source and transparent
 - No ads, no analytics, no subscriptions, no in-app monetization
 - Official distribution only from this repository and its GitHub Releases
-- Bilingual interface: Russian and English, switchable in Settings
+- Bilingual interface: Russian and English, follows the system language by default
 - Modern Android stack: Kotlin, Jetpack Compose, Material 3
 - Diff between scans, persisted locally with Room
 - Built-in plain-language Permission Wiki — no need to google what `BIND_ACCESSIBILITY_SERVICE` means
@@ -117,11 +117,9 @@ For every app the report shows:
 
 ### Diff between scans
 
-The previous snapshot is stored in a local Room database. After a fresh scan, apps that have gained new sensitive permissions are surfaced explicitly.
+The previous snapshot is stored in a local Room database. After a fresh scan, a banner shows how many apps changed since the last scan. Expand it to see, for each changed app, its new findings and the permissions it added or removed; tap an app to open its detail screen.
 
-### Background re-scan
-
-A `WorkManager` job and a `PackageChangeReceiver` listen for newly installed or upgraded packages, so the cached report stays in sync without a manual rescan.
+Scans run only when you start them — there is no background re-scan.
 
 ### Permission Wiki
 
@@ -129,7 +127,7 @@ A built-in reference for what each Android permission actually grants — groupe
 
 ### Localization
 
-Russian and English. The current language is applied immediately and persists across launches.
+Russian and English. By default the app follows the system language; you can pick a language in Settings or, on Android 13+, in the system's per-app language settings. The choice is applied immediately and persists across launches.
 
 ## Tech Stack
 
@@ -137,20 +135,18 @@ Russian and English. The current language is applied immediately and persists ac
 - Jetpack Compose (BOM 2026.09.00, Material 3), edge-to-edge UI
 - Hilt 2.60, KSP 2.3
 - Room 2.8
-- WorkManager + Broadcast receiver for incremental package change tracking
 - AndroidX Navigation Compose
 - minSdk 26, targetSdk 37, compileSdk 37
-- JUnit unit tests for the risk scorer and scan diff
+- JUnit unit tests for the risk scorer, scan diff and scanner helpers
 
 ## Project Structure
 
-- `app/src/main/java/com/packagespy/app/PackageSpyApp.kt` — application entry, Hilt + WorkManager wiring
+- `app/src/main/java/com/packagespy/app/PackageSpyApp.kt` — application entry, Hilt wiring
 - `app/src/main/java/com/packagespy/app/di` — Hilt modules
 - `app/src/main/java/com/packagespy/app/domain` — domain models, repository contracts, risk-scoring use case
 - `app/src/main/java/com/packagespy/app/data/scanner` — `PackageScanner` (wrapper around `PackageManager`, with progress callback)
 - `app/src/main/java/com/packagespy/app/data/local` — Room database, entity, DAO, mapper
 - `app/src/main/java/com/packagespy/app/data/repository` — `AppRiskRepository` implementation
-- `app/src/main/java/com/packagespy/app/data/work` — background `RescanWorker` and `PackageChangeReceiver`
 - `app/src/main/java/com/packagespy/app/presentation` — Compose screens (welcome, picker, main report, detail, settings, wiki) and theme
 
 ## Build Requirements

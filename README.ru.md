@@ -81,7 +81,7 @@ Squirrel Detective позволяет:
 - Open source и прозрачный код
 - Без рекламы, аналитики, подписок и встроенной монетизации
 - Официальная дистрибуция — только через этот репозиторий и его GitHub Releases
-- Двуязычный интерфейс: русский и английский, переключается в настройках
+- Двуязычный интерфейс: русский и английский, по умолчанию — язык системы
 - Современный Android-стек: Kotlin, Jetpack Compose, Material 3
 - Diff между сканами, который хранится локально через Room
 - Встроенная человеческая Wiki по Android-разрешениям — не нужно гуглить, что значит `BIND_ACCESSIBILITY_SERVICE`
@@ -117,11 +117,9 @@ Squirrel Detective построен по строгой офлайновой и 
 
 ### Diff между сканами
 
-Прошлый снимок хранится в локальной Room-базе. После нового скана приложения, у которых появились новые чувствительные разрешения, выводятся отдельной отметкой.
+Прошлый снимок хранится в локальной Room-базе. После нового скана баннер показывает, сколько приложений изменилось с прошлого сканирования. Если его раскрыть, по каждому приложению видны новые находки и добавленные или удалённые разрешения; тап по приложению открывает его детальный экран.
 
-### Фоновый ре-скан
-
-`WorkManager` и `PackageChangeReceiver` слушают новые установки и обновления пакетов, чтобы кэш отчёта оставался актуальным без ручного пересканирования.
+Сканирование запускается только вручную — фонового ре-скана нет.
 
 ### Wiki по разрешениям
 
@@ -129,7 +127,7 @@ Squirrel Detective построен по строгой офлайновой и 
 
 ### Локализация
 
-Русский и английский. Текущий язык применяется сразу и сохраняется между запусками.
+Русский и английский. По умолчанию используется язык системы; выбрать язык можно в настройках приложения или, на Android 13+, в системной настройке языка приложения. Выбор применяется сразу и сохраняется между запусками.
 
 ## Технологии
 
@@ -137,20 +135,18 @@ Squirrel Detective построен по строгой офлайновой и 
 - Jetpack Compose (BOM 2026.09.00, Material 3), edge-to-edge интерфейс
 - Hilt 2.60, KSP 2.3
 - Room 2.8
-- WorkManager + Broadcast receiver для инкрементального отслеживания изменений
 - AndroidX Navigation Compose
 - minSdk 26, targetSdk 37, compileSdk 37
-- JUnit-тесты для оценки риска и сравнения сканирований
+- JUnit-тесты для оценки риска, сравнения сканирований и хелперов сканера
 
 ## Структура проекта
 
-- `app/src/main/java/com/packagespy/app/PackageSpyApp.kt` — точка входа, Hilt + WorkManager
+- `app/src/main/java/com/packagespy/app/PackageSpyApp.kt` — точка входа, Hilt
 - `app/src/main/java/com/packagespy/app/di` — Hilt-модули
 - `app/src/main/java/com/packagespy/app/domain` — модели, контракты репозитория, use case оценки риска
 - `app/src/main/java/com/packagespy/app/data/scanner` — `PackageScanner` (обёртка над `PackageManager` с прогрессом)
 - `app/src/main/java/com/packagespy/app/data/local` — Room-база, entity, DAO, mapper
 - `app/src/main/java/com/packagespy/app/data/repository` — реализация `AppRiskRepository`
-- `app/src/main/java/com/packagespy/app/data/work` — фоновый `RescanWorker` и `PackageChangeReceiver`
 - `app/src/main/java/com/packagespy/app/presentation` — Compose-экраны (welcome, picker, отчёт, детальный, настройки, wiki) и тема
 
 ## Требования к сборке
