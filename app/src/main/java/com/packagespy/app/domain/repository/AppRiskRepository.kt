@@ -24,6 +24,4 @@ interface AppRiskRepository {
 
     /** Single-app scan that bypasses the cache and persistence. */
     suspend fun scanSingle(packageName: String): AppRiskInfo?
-
-    suspend fun getApp(packageName: String): AppRiskInfo?
 }

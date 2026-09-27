@@ -12,9 +12,6 @@ interface AppSnapshotDao {
     @Query("SELECT * FROM app_snapshots")
     suspend fun getAll(): List<AppSnapshotEntity>
 
-    @Query("SELECT * FROM app_snapshots WHERE packageName = :pkg LIMIT 1")
-    suspend fun get(pkg: String): AppSnapshotEntity?
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<AppSnapshotEntity>)
 

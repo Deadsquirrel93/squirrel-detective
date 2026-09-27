@@ -61,7 +61,7 @@ fun DetailScreen(
     onBack: () -> Unit,
     viewModel: DetailViewModel = hiltViewModel(),
 ) {
-    val app by viewModel.app.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     NutSpyBackground {
@@ -70,7 +70,9 @@ fun DetailScreen(
             topBar = {
                 TopAppBar(
                     title = {
-                        Text(app?.appName ?: stringResource(R.string.detail_title_fallback))
+                        val title = (state as? DetailUiState.Loaded)?.app?.appName
+                            ?: stringResource(R.string.detail_title_fallback)
+                        Text(title)
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
@@ -81,7 +83,7 @@ fun DetailScreen(
                         }
                     },
                     actions = {
-                        val pkg = app?.packageName
+                        val pkg = (state as? DetailUiState.Loaded)?.app?.packageName
                         if (pkg != null) {
                             val errorMessage = stringResource(R.string.detail_open_in_system_settings_failed)
                             IconButton(onClick = {
@@ -98,12 +100,16 @@ fun DetailScreen(
                 )
             },
         ) { padding ->
-            when (val current = app) {
-                null -> Box(
+            when (val current = state) {
+                DetailUiState.Loading -> Box(
                     Modifier.fillMaxSize().padding(padding),
                     contentAlignment = Alignment.Center,
                 ) { CircularProgressIndicator() }
-                else -> DetailContent(current, padding)
+                DetailUiState.NotFound -> Box(
+                    Modifier.fillMaxSize().padding(padding),
+                    contentAlignment = Alignment.Center,
+                ) { Text(stringResource(R.string.detail_not_found)) }
+                is DetailUiState.Loaded -> DetailContent(current.app, padding)
             }
         }
     }

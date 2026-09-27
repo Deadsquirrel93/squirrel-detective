@@ -42,6 +42,7 @@
     <string name="risk_safe">БЕЗОПАСНО</string>
 
     <string name="detail_title_fallback">Подробности</string>
+    <string name="detail_not_found">Приложение не найдено — возможно, оно удалено.</string>
     <string name="detail_section_findings">Что обнаружено</string>
     <string name="detail_section_permissions">Все разрешения (%1$d)</string>
     <string name="detail_section_receivers">Пакетные broadcast-receiver\'ы</string>

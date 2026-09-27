@@ -70,12 +70,4 @@ class AppRiskRepositoryImpl @Inject constructor(
         withContext(Dispatchers.Default) {
             scanner.scanSingle(packageName)
         }
-
-    override suspend fun getApp(packageName: String): AppRiskInfo? {
-        cache.value.firstOrNull { it.packageName == packageName }?.let { return it }
-        val fromDb = withContext(Dispatchers.IO) {
-            dao.get(packageName)?.toDomain(scorer)
-        }
-        return fromDb ?: scanSingle(packageName)
-    }
 }

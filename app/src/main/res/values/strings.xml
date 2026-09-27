@@ -48,6 +48,7 @@
 
     <!-- Detail -->
     <string name="detail_title_fallback">Details</string>
+    <string name="detail_not_found">App not found — it may have been uninstalled.</string>
     <string name="detail_section_findings">What we found</string>
     <string name="detail_section_permissions">All permissions (%1$d)</string>
     <string name="detail_section_receivers">Package broadcast receivers</string>
