@@ -237,6 +237,4 @@
     <string name="whitelist_file_manager_full">File managers list APK files and let you install them, so they need package visibility.</string>
     <string name="whitelist_antivirus_short">Antivirus — access expected</string>
     <string name="whitelist_antivirus_full">Antivirus apps scan every installed package — this is their primary function.</string>
-    <string name="whitelist_system_short">System tool</string>
-    <string name="whitelist_system_full">A system app that holds this access by default.</string>
 </resources>

@@ -2,14 +2,14 @@ package com.packagespy.app.domain.model
 
 /**
  * Known categories of apps that legitimately need broad package visibility.
- * These cause the risk to be downgraded to GREEN ("explainable").
+ * These cause the risk to be downgraded to GREEN ("explainable") — but only
+ * for a system app, or one installed from a trusted app store.
  */
 enum class LegitimateCategory {
     LAUNCHER,
     APP_STORE,
     FILE_MANAGER,
-    ANTIVIRUS,
-    SYSTEM_TOOL
+    ANTIVIRUS
 }
 
 object KnownLegitimateApps {
@@ -41,7 +41,6 @@ object KnownLegitimateApps {
         "ru.vk.store",
         "com.aurora.store",
         "org.fdroid.fdroid",
-        "com.fdroid.fdroid",
         "com.aptoide.partners",
         "cm.aptoide.pt"
     )
@@ -74,11 +73,33 @@ object KnownLegitimateApps {
         "com.malwarebytes.antimalware"
     )
 
-    fun categorize(packageName: String): LegitimateCategory? = when (packageName) {
+    /** Installers whose `initiatingPackageName` (or, pre-API 30, install source) can be trusted. */
+    val trustedInstallers: Set<String> = setOf(
+        "com.android.vending",
+        "com.sec.android.app.samsungapps",
+        "com.huawei.appmarket",
+        "com.xiaomi.market",
+        "com.amazon.venezia",
+        "ru.vk.store",
+        "org.fdroid.fdroid",
+        "com.aurora.store"
+    )
+
+    private fun matchedCategory(packageName: String): LegitimateCategory? = when (packageName) {
         in launchers -> LegitimateCategory.LAUNCHER
         in stores -> LegitimateCategory.APP_STORE
         in fileManagers -> LegitimateCategory.FILE_MANAGER
         in antivirus -> LegitimateCategory.ANTIVIRUS
         else -> null
+    }
+
+    /**
+     * Returns the [LegitimateCategory] for [packageName], but only if the app
+     * is also either a system app or was installed from a [trustedInstallers]
+     * source — a known name alone can be spoofed by any sideloaded app.
+     */
+    fun categorize(packageName: String, isSystemApp: Boolean, trustSource: String?): LegitimateCategory? {
+        val category = matchedCategory(packageName) ?: return null
+        return if (isSystemApp || trustSource in trustedInstallers) category else null
     }
 }

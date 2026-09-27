@@ -111,7 +111,7 @@ class PackageScanner @Inject constructor(
         val isDebuggable = appInfo != null &&
             (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
         val targetSdk = appInfo?.targetSdkVersion ?: 0
-        val installer = installerOf(info.packageName)
+        val installSource = installSourceOf(info.packageName)
         val permissions = info.requestedPermissions?.toList().orEmpty()
         val receivers = info.receivers.orEmpty().map { activityInfo ->
             val name = activityInfo.name ?: ""
@@ -135,27 +135,35 @@ class PackageScanner @Inject constructor(
                 appName = appName,
                 versionName = info.versionName,
                 isSystemApp = isSystemApp,
-                installerPackage = installer,
+                installerPackage = installSource.installing,
                 permissions = permissions,
                 receivers = receivers,
                 services = services,
                 isDebuggable = isDebuggable,
                 targetSdk = targetSdk,
                 hasLauncherIntent = hasLauncher,
+                trustSource = selectTrustSource(
+                    Build.VERSION.SDK_INT,
+                    installSource.initiating,
+                    installSource.installing,
+                ),
             )
         )
     }
 
-    private fun installerOf(packageName: String): String? {
+    private data class InstallSource(val installing: String?, val initiating: String?)
+
+    private fun installSourceOf(packageName: String): InstallSource {
         return try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                pm.getInstallSourceInfo(packageName).installingPackageName
+                val info = pm.getInstallSourceInfo(packageName)
+                InstallSource(installing = info.installingPackageName, initiating = info.initiatingPackageName)
             } else {
                 @Suppress("DEPRECATION")
-                pm.getInstallerPackageName(packageName)
+                InstallSource(installing = pm.getInstallerPackageName(packageName), initiating = null)
             }
         } catch (_: Throwable) {
-            null
+            InstallSource(installing = null, initiating = null)
         }
     }
 

@@ -227,6 +227,4 @@
     <string name="whitelist_file_manager_full">Файловые менеджеры показывают APK-файлы и позволяют их устанавливать, поэтому требуют видимости пакетов.</string>
     <string name="whitelist_antivirus_short">Антивирус — доступ ожидаем</string>
     <string name="whitelist_antivirus_full">Антивирус сканирует установленные пакеты — это его прямая функция.</string>
-    <string name="whitelist_system_short">Системный инструмент</string>
-    <string name="whitelist_system_full">Системное приложение, имеющее этот доступ по умолчанию.</string>
 </resources>

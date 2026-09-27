@@ -31,6 +31,7 @@ class RiskScorerTest {
         isDebuggable: Boolean = false,
         targetSdk: Int = 34,
         hasLauncherIntent: Boolean = true,
+        trustSource: String? = null,
     ) = RiskScorer.Inputs(
         packageName = packageName,
         appName = appName,
@@ -43,6 +44,7 @@ class RiskScorerTest {
         isDebuggable = isDebuggable,
         targetSdk = targetSdk,
         hasLauncherIntent = hasLauncherIntent,
+        trustSource = trustSource,
     )
 
     private fun ids(result: AppRiskInfo): List<ThreatId> = result.reasons.map { it.id }
@@ -448,6 +450,7 @@ class RiskScorerTest {
             inputs(
                 packageName = "com.android.vending",
                 permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                trustSource = "com.android.vending",
             )
         )
         assertEquals(ThreatId.KNOWN_LEGITIMATE_STORE, result.reasons.first().id)
@@ -459,6 +462,82 @@ class RiskScorerTest {
         val result = scorer.score(inputs(packageName = "com.android.vending"))
         assertTrue(result.reasons.isEmpty())
         assertEquals(RiskLevel.SAFE, result.riskLevel)
+    }
+
+    @Test
+    fun `known app name without a trusted install source is not downgraded`() {
+        val result = scorer.score(
+            inputs(
+                packageName = "com.kms.free",
+                permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                trustSource = null,
+            )
+        )
+        assertTrue(ids(result).none { it.name.startsWith("KNOWN_LEGITIMATE") })
+        assertTrue(RiskLevel.GREEN != result.riskLevel)
+    }
+
+    @Test
+    fun `known app name with an untrusted install source is not downgraded`() {
+        val result = scorer.score(
+            inputs(
+                packageName = "com.kms.free",
+                permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                trustSource = "cm.aptoide.pt",
+            )
+        )
+        assertTrue(RiskLevel.GREEN != result.riskLevel)
+    }
+
+    @Test
+    fun `known app name with a trusted store install source is downgraded to GREEN`() {
+        val result = scorer.score(
+            inputs(
+                packageName = "com.kms.free",
+                permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                trustSource = "com.android.vending",
+            )
+        )
+        assertEquals(ThreatId.KNOWN_LEGITIMATE_ANTIVIRUS, result.reasons.first().id)
+        assertEquals(RiskLevel.GREEN, result.riskLevel)
+    }
+
+    @Test
+    fun `system app known name without a trusted install source is downgraded to GREEN`() {
+        val result = scorer.score(
+            inputs(
+                packageName = "com.android.launcher3",
+                isSystemApp = true,
+                permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                trustSource = null,
+            )
+        )
+        assertEquals(ThreatId.KNOWN_LEGITIMATE_LAUNCHER, result.reasons.first().id)
+        assertEquals(RiskLevel.GREEN, result.riskLevel)
+    }
+
+    @Test
+    fun `unofficial store package name is not whitelisted even from a trusted installer`() {
+        val result = scorer.score(
+            inputs(
+                packageName = "com.fdroid.fdroid",
+                permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                trustSource = "com.android.vending",
+            )
+        )
+        assertTrue(RiskLevel.GREEN != result.riskLevel)
+    }
+
+    @Test
+    fun `official F-Droid client self-updated is downgraded to GREEN`() {
+        val result = scorer.score(
+            inputs(
+                packageName = "org.fdroid.fdroid",
+                permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                trustSource = "org.fdroid.fdroid",
+            )
+        )
+        assertEquals(RiskLevel.GREEN, result.riskLevel)
     }
 
     // ---- 12: system app downgrade ----

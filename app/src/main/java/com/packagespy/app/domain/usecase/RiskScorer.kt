@@ -35,6 +35,7 @@ class RiskScorer @Inject constructor() {
         val isDebuggable: Boolean = false,
         val targetSdk: Int = 0,
         val hasLauncherIntent: Boolean = true,
+        val trustSource: String? = null,
     )
 
     fun score(inputs: Inputs): AppRiskInfo {
@@ -347,7 +348,11 @@ class RiskScorer @Inject constructor() {
 
         // ---- Whitelist downgrade ----
 
-        val legitimateCategory = KnownLegitimateApps.categorize(inputs.packageName)
+        val legitimateCategory = KnownLegitimateApps.categorize(
+            inputs.packageName,
+            inputs.isSystemApp,
+            inputs.trustSource,
+        )
         val finalReasons = if (legitimateCategory != null && reasons.isNotEmpty()) {
             listOf(legitimateReason(legitimateCategory)) + reasons
         } else {
@@ -408,12 +413,6 @@ class RiskScorer @Inject constructor() {
             ThreatId.KNOWN_LEGITIMATE_ANTIVIRUS,
             R.string.whitelist_antivirus_short,
             R.string.whitelist_antivirus_full,
-            RiskLevel.GREEN,
-        )
-        LegitimateCategory.SYSTEM_TOOL -> reason(
-            ThreatId.KNOWN_LEGITIMATE_SYSTEM,
-            R.string.whitelist_system_short,
-            R.string.whitelist_system_full,
             RiskLevel.GREEN,
         )
     }
