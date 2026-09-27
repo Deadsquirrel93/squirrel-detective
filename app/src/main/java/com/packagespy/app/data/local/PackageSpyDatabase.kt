@@ -6,7 +6,7 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [AppSnapshotEntity::class],
     version = 1,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class PackageSpyDatabase : RoomDatabase() {
     abstract fun snapshotDao(): AppSnapshotDao
