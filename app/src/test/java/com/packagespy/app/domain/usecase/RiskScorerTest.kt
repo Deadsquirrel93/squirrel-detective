@@ -7,6 +7,7 @@ import com.packagespy.app.domain.model.ReceiverInfo
 import com.packagespy.app.domain.model.RiskLevel
 import com.packagespy.app.domain.model.ThreatId
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -474,7 +475,7 @@ class RiskScorerTest {
             )
         )
         assertTrue(ids(result).none { it.name.startsWith("KNOWN_LEGITIMATE") })
-        assertTrue(RiskLevel.GREEN != result.riskLevel)
+        assertNotEquals(RiskLevel.GREEN, result.riskLevel)
     }
 
     @Test
@@ -486,7 +487,7 @@ class RiskScorerTest {
                 trustSource = "cm.aptoide.pt",
             )
         )
-        assertTrue(RiskLevel.GREEN != result.riskLevel)
+        assertNotEquals(RiskLevel.GREEN, result.riskLevel)
     }
 
     @Test
@@ -525,7 +526,7 @@ class RiskScorerTest {
                 trustSource = "com.android.vending",
             )
         )
-        assertTrue(RiskLevel.GREEN != result.riskLevel)
+        assertNotEquals(RiskLevel.GREEN, result.riskLevel)
     }
 
     @Test
