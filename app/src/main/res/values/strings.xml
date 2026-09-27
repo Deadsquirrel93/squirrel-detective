@@ -3,7 +3,6 @@
     <string name="app_name">Squirrel Detective</string>
 
     <!-- Welcome / mode selection -->
-    <string name="welcome_title">Squirrel Detective</string>
     <string name="welcome_subtitle">Local audit of installed apps. No network access, no analytics.</string>
     <string name="mode_full_scan_title">Scan all apps</string>
     <string name="mode_full_scan_body">Inspect every installed app and surface those with risky permission combinations.</string>

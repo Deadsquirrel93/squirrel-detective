@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name">Squirrel Detective</string>
 
-    <string name="welcome_title">Squirrel Detective</string>
     <string name="welcome_subtitle">Локальный аудит установленных приложений. Без сети, без аналитики.</string>
     <string name="mode_full_scan_title">Сканировать все приложения</string>
     <string name="mode_full_scan_body">Проверить каждое установленное приложение и подсветить опасные комбинации разрешений.</string>
