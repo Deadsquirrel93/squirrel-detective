@@ -22,6 +22,7 @@ import javax.inject.Singleton
 class PackageScanner @Inject constructor(
     @ApplicationContext private val context: Context,
     private val riskScorer: RiskScorer,
+    private val activeComponentsReader: ActiveComponentsReader,
 ) {
 
     private val pm: PackageManager = context.packageManager
@@ -36,10 +37,11 @@ class PackageScanner @Inject constructor(
         val total = packages.size
         onProgress?.invoke(0, total)
         val receiverIndex = buildReceiverActionIndex(queryReceiverActionHits(packageName = null))
+        val active = activeComponentsReader.read()
         val result = ArrayList<AppRiskInfo>(total)
         packages.forEachIndexed { index, info ->
             try {
-                result += buildRiskInfo(info, receiverIndex)
+                result += buildRiskInfo(info, receiverIndex, active)
             } catch (_: Throwable) {
                 // Defensive: never let one broken package abort the whole scan.
             }
@@ -51,7 +53,8 @@ class PackageScanner @Inject constructor(
     fun scanSingle(packageName: String): AppRiskInfo? {
         val info = packageInfo(packageName) ?: return null
         val receiverIndex = buildReceiverActionIndex(queryReceiverActionHits(packageName))
-        return runCatching { buildRiskInfo(info, receiverIndex) }.getOrNull()
+        val active = activeComponentsReader.read()
+        return runCatching { buildRiskInfo(info, receiverIndex, active) }.getOrNull()
     }
 
     fun listInstalled(includeSystem: Boolean): List<InstalledAppSummary> {
@@ -103,6 +106,7 @@ class PackageScanner @Inject constructor(
     private fun buildRiskInfo(
         info: PackageInfo,
         receiverIndex: Map<ReceiverKey, List<String>>,
+        active: ActiveComponents,
     ): AppRiskInfo {
         val appInfo = info.applicationInfo
         val appName = appInfo?.loadLabel(pm)?.toString() ?: info.packageName
@@ -147,6 +151,7 @@ class PackageScanner @Inject constructor(
                     installSource.initiating,
                     installSource.installing,
                 ),
+                activeCapabilities = activeCapabilitiesOf(info.packageName, active),
             )
         )
     }
