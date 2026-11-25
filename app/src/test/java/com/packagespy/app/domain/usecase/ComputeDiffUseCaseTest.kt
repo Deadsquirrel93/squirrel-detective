@@ -198,4 +198,42 @@ class ComputeDiffUseCaseTest {
 
         assertEquals(listOf("a.pkg", "b.pkg"), result.map { it.packageName })
     }
+
+    @Test
+    fun `marking an app as USER_TRUSTED alone does not create a diff`() {
+        val previous = listOf(snapshot(reasonIds = setOf(ThreatId.QUERY_ALL_PACKAGES)))
+        val current = listOf(
+            appInfo(
+                reasons = listOf(
+                    reason(ThreatId.USER_TRUSTED, RiskLevel.GREEN),
+                    reason(ThreatId.QUERY_ALL_PACKAGES, RiskLevel.YELLOW),
+                ),
+            ),
+        )
+
+        val result = useCase.diff(previous, current)
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `user-trusted app still surfaces genuinely new findings in diff`() {
+        val previous = listOf(
+            snapshot(reasonIds = setOf(ThreatId.USER_TRUSTED, ThreatId.QUERY_ALL_PACKAGES)),
+        )
+        val current = listOf(
+            appInfo(
+                reasons = listOf(
+                    reason(ThreatId.USER_TRUSTED, RiskLevel.GREEN),
+                    reason(ThreatId.QUERY_ALL_PACKAGES, RiskLevel.YELLOW),
+                    reason(ThreatId.ACCESSIBILITY_ENABLED, RiskLevel.RED),
+                ),
+            ),
+        )
+
+        val result = useCase.diff(previous, current)
+
+        assertEquals(1, result.size)
+        assertEquals(listOf(ThreatId.ACCESSIBILITY_ENABLED), result.single().newReasons.map { it.id })
+    }
 }

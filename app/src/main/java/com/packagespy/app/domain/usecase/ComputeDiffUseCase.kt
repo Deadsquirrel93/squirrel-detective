@@ -3,6 +3,7 @@ package com.packagespy.app.domain.usecase
 import com.packagespy.app.domain.model.AppDiff
 import com.packagespy.app.domain.model.AppRiskInfo
 import com.packagespy.app.domain.model.AppSnapshot
+import com.packagespy.app.domain.model.ThreatId
 import javax.inject.Inject
 
 /**
@@ -23,7 +24,9 @@ class ComputeDiffUseCase @Inject constructor() {
             val addedPerms = now.permissions - before.permissions.toSet()
             val removedPerms = before.permissions - now.permissions.toSet()
             val previousReasonIds = before.reasonIds
-            val newReasons = now.reasons.filter { it.id !in previousReasonIds }
+            val newReasons = now.reasons.filter {
+                it.id !in previousReasonIds && it.id != ThreatId.USER_TRUSTED
+            }
             val diff = AppDiff(
                 packageName = now.packageName,
                 appName = now.appName,

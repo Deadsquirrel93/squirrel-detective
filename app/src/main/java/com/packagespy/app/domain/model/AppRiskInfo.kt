@@ -10,6 +10,14 @@ data class AppRiskInfo(
     val receivers: List<ReceiverInfo>,
     val reasons: List<ThreatReason>,
     val riskLevel: RiskLevel,
+    val grantedPermissions: Set<String> = permissions.toSet(),
+    val combos: List<ThreatCombo> = emptyList(),
+    val targetSdk: Int = 0,
+    val firstInstallTime: Long = 0L,
+    val lastUpdateTime: Long = 0L,
+    val usesCleartextTraffic: Boolean = false,
+    val isUserTrusted: Boolean = false,
+    val isArchive: Boolean = false,
 )
 
 data class ReceiverInfo(

@@ -19,24 +19,33 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Sort
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,6 +54,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,6 +75,7 @@ import com.packagespy.app.domain.model.displayPermissionName
 import com.packagespy.app.presentation.components.AppIcon
 import com.packagespy.app.presentation.components.NutSpyBackground
 import com.packagespy.app.presentation.components.RiskBadge
+import com.packagespy.app.presentation.components.nutSpyTextFieldColors
 import com.packagespy.app.presentation.components.nutSpyTopAppBarColors
 import com.packagespy.app.presentation.theme.RiskColors
 
@@ -78,6 +89,7 @@ fun MainScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var changesExpanded by rememberSaveable(state.recentChanges) { mutableStateOf(false) }
+    var sortMenuExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(includeSystem) {
         viewModel.ensureInitialScan(includeSystem)
@@ -130,6 +142,48 @@ fun MainScreen(
                             }
                         },
                         actions = {
+                            Box {
+                                IconButton(onClick = { sortMenuExpanded = true }) {
+                                    Icon(
+                                        Icons.AutoMirrored.Filled.Sort,
+                                        contentDescription = stringResource(R.string.results_sort),
+                                        tint = if (state.sortMode != SortMode.BY_RISK) {
+                                            MaterialTheme.colorScheme.primary
+                                        } else {
+                                            LocalContentColor.current
+                                        },
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = sortMenuExpanded,
+                                    onDismissRequest = { sortMenuExpanded = false },
+                                ) {
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.sort_by_risk)) },
+                                        trailingIcon = {
+                                            if (state.sortMode == SortMode.BY_RISK) {
+                                                Icon(Icons.Filled.Check, contentDescription = null)
+                                            }
+                                        },
+                                        onClick = {
+                                            viewModel.setSortMode(SortMode.BY_RISK)
+                                            sortMenuExpanded = false
+                                        },
+                                    )
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(R.string.sort_recently_updated)) },
+                                        trailingIcon = {
+                                            if (state.sortMode == SortMode.RECENTLY_UPDATED) {
+                                                Icon(Icons.Filled.Check, contentDescription = null)
+                                            }
+                                        },
+                                        onClick = {
+                                            viewModel.setSortMode(SortMode.RECENTLY_UPDATED)
+                                            sortMenuExpanded = false
+                                        },
+                                    )
+                                }
+                            }
                             IconButton(
                                 onClick = { viewModel.rescan() },
                                 enabled = !state.isRescanning,
@@ -193,7 +247,35 @@ fun MainScreen(
                     bottom = padding.calculateBottomPadding() + 16.dp,
                 ),
             ) {
-                item { FilterRow(state.filter, viewModel::setFilter) }
+                item(key = "search_bar") {
+                    OutlinedTextField(
+                        value = state.query,
+                        onValueChange = viewModel::setQuery,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 4.dp),
+                        singleLine = true,
+                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                        trailingIcon = {
+                            if (state.query.isNotEmpty()) {
+                                IconButton(onClick = { viewModel.setQuery("") }) {
+                                    Icon(Icons.Default.Close, contentDescription = null)
+                                }
+                            }
+                        },
+                        placeholder = { Text(stringResource(R.string.results_search_hint)) },
+                        colors = nutSpyTextFieldColors(),
+                    )
+                }
+
+                item(key = "risk_filters") { FilterRow(state.filter, viewModel::setFilter) }
+
+                item(key = "capability_filters") {
+                    CapabilityFilterRow(
+                        selected = state.capability,
+                        onSelect = viewModel::setCapability,
+                    )
+                }
 
                 if (state.recentChanges.isNotEmpty()) {
                     changesSection(
@@ -209,20 +291,23 @@ fun MainScreen(
                 }
 
                 if (state.risky.isEmpty()) {
-                    item { EmptyRisky() }
+                    val hasActiveSearch = state.query.isNotBlank() || state.capability != CapabilityFilter.ANY
+                    item(key = "empty_risky") { EmptyRisky(hasActiveSearch) }
                 } else {
                     items(state.risky, key = { it.packageName }) { app ->
                         AppRow(app = app, onClick = { onAppClick(app.packageName) })
                     }
                 }
 
-                item {
-                    SafeAppsSection(
-                        expanded = state.showSafe,
-                        apps = state.safe,
-                        onToggle = viewModel::toggleSafe,
-                        onClick = onAppClick,
-                    )
+                if (state.safe.isNotEmpty()) {
+                    item(key = "safe_section") {
+                        SafeAppsSection(
+                            expanded = state.showSafe,
+                            apps = state.safe,
+                            onToggle = viewModel::toggleSafe,
+                            onClick = onAppClick,
+                        )
+                    }
                 }
             }
         }
@@ -248,13 +333,12 @@ private fun ScanProgressBar(isScanning: Boolean, progress: ScanProgress?) {
 
 @Composable
 private fun FilterRow(current: RiskFilter, onSelect: (RiskFilter) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        RiskFilter.values().forEach { filter ->
+        items(RiskFilter.entries) { filter ->
             FilterChip(
                 selected = current == filter,
                 onClick = { onSelect(filter) },
@@ -270,6 +354,43 @@ private fun FilterRow(current: RiskFilter, onSelect: (RiskFilter) -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun CapabilityFilterRow(
+    selected: CapabilityFilter,
+    onSelect: (CapabilityFilter) -> Unit,
+) {
+    val capabilities = remember { CapabilityFilter.entries.filter { it != CapabilityFilter.ANY } }
+    LazyRow(
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        items(capabilities) { cap ->
+            FilterChip(
+                selected = selected == cap,
+                onClick = { onSelect(cap) },
+                label = { Text(stringResource(capabilityLabelRes(cap))) },
+            )
+        }
+    }
+}
+
+@StringRes
+private fun capabilityLabelRes(cap: CapabilityFilter): Int = when (cap) {
+    CapabilityFilter.ANY -> R.string.filter_all
+    CapabilityFilter.CAMERA -> R.string.cap_filter_camera
+    CapabilityFilter.MICROPHONE -> R.string.cap_filter_mic
+    CapabilityFilter.LOCATION -> R.string.cap_filter_location
+    CapabilityFilter.BACKGROUND_LOCATION -> R.string.cap_filter_bg_location
+    CapabilityFilter.SMS -> R.string.cap_filter_sms
+    CapabilityFilter.CONTACTS -> R.string.cap_filter_contacts
+    CapabilityFilter.ACCESSIBILITY -> R.string.cap_filter_accessibility
+    CapabilityFilter.NOTIFICATIONS -> R.string.cap_filter_notifications
+    CapabilityFilter.OVERLAY -> R.string.cap_filter_overlay
+    CapabilityFilter.INSTALL_APK -> R.string.cap_filter_install_apk
+    CapabilityFilter.ALL_PACKAGES -> R.string.cap_filter_all_packages
 }
 
 private fun LazyListScope.changesSection(
@@ -478,7 +599,7 @@ private fun AppRow(app: AppRiskInfo, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EmptyRisky() {
+private fun EmptyRisky(hasActiveSearch: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -486,7 +607,9 @@ private fun EmptyRisky() {
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            stringResource(R.string.results_empty_risky),
+            stringResource(
+                if (hasActiveSearch) R.string.picker_no_results else R.string.results_empty_risky,
+            ),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

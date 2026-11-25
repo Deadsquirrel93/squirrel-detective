@@ -1,6 +1,8 @@
 package com.packagespy.app.data.repository
 
 import com.packagespy.app.data.local.AppSnapshotDao
+import com.packagespy.app.data.local.TrustedAppDao
+import com.packagespy.app.data.local.TrustedAppEntity
 import com.packagespy.app.data.local.acknowledgedRows
 import com.packagespy.app.data.local.baselineRowsToWrite
 import com.packagespy.app.data.local.toSnapshot
@@ -24,6 +26,7 @@ import javax.inject.Singleton
 class AppRiskRepositoryImpl @Inject constructor(
     private val scanner: PackageScanner,
     private val dao: AppSnapshotDao,
+    private val trustedAppDao: TrustedAppDao,
     private val diffUseCase: ComputeDiffUseCase,
 ) : AppRiskRepository {
 
@@ -40,10 +43,11 @@ class AppRiskRepositoryImpl @Inject constructor(
     override suspend fun rescan(includeSystem: Boolean): List<AppRiskInfo> = scanMutex.withLock {
         withContext(Dispatchers.Default) {
             val previous = dao.getAll().map { it.toSnapshot() }
+            val trusted = trustedAppDao.getAllPackageNames().toSet()
 
             progress.value = ScanProgress(current = 0, total = 0)
             try {
-                val current = scanner.scanAll(includeSystem) { done, total ->
+                val current = scanner.scanAll(includeSystem, trusted) { done, total ->
                     progress.value = ScanProgress(current = done, total = total)
                 }
                 val diffs = diffUseCase.diff(previous, current)
@@ -82,6 +86,27 @@ class AppRiskRepositoryImpl @Inject constructor(
 
     override suspend fun scanSingle(packageName: String): AppRiskInfo? =
         withContext(Dispatchers.Default) {
-            scanner.scanSingle(packageName)
+            val trusted = trustedAppDao.getAllPackageNames().toSet()
+            scanner.scanSingle(packageName, trusted)
         }
+
+    override suspend fun scanApk(uriString: String): AppRiskInfo? =
+        withContext(Dispatchers.IO) {
+            scanner.scanApk(uriString)
+        }
+
+    override suspend fun setTrusted(packageName: String, trusted: Boolean) = scanMutex.withLock {
+        withContext(Dispatchers.Default) {
+            if (trusted) {
+                trustedAppDao.insert(TrustedAppEntity(packageName, System.currentTimeMillis()))
+            } else {
+                trustedAppDao.delete(packageName)
+            }
+            val trustedSet = trustedAppDao.getAllPackageNames().toSet()
+            val refreshed = scanner.scanSingle(packageName, trustedSet) ?: return@withContext
+            cache.value = cache.value.map { existing ->
+                if (existing.packageName == packageName) refreshed else existing
+            }
+        }
+    }
 }

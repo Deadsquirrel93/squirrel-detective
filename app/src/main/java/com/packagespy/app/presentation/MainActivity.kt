@@ -59,9 +59,11 @@ private object Routes {
     const val Picker = "picker"
     const val Results = "results/{includeSystem}"
     const val Detail = "detail/{packageName}"
+    const val ApkDetail = "apk-detail?apkUri={apkUri}"
 
     fun results(includeSystem: Boolean): String = "results/$includeSystem"
     fun detail(pkg: String): String = "detail/${Uri.encode(pkg)}"
+    fun apkDetail(uri: String): String = "apk-detail?apkUri=${Uri.encode(uri)}"
 }
 
 @Composable
@@ -74,6 +76,7 @@ private fun NutSpyNavHost() {
                     navController.navigate(Routes.results(includeSystem))
                 },
                 onChooseApp = { navController.navigate(Routes.Picker) },
+                onInspectApk = { uri -> navController.navigate(Routes.apkDetail(uri)) },
                 onOpenSettings = { navController.navigate(Routes.Settings) },
                 onOpenWiki = { navController.navigate(Routes.Wiki) },
             )
@@ -104,6 +107,12 @@ private fun NutSpyNavHost() {
         composable(
             route = Routes.Detail,
             arguments = listOf(navArgument("packageName") { type = NavType.StringType }),
+        ) {
+            DetailScreen(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = Routes.ApkDetail,
+            arguments = listOf(navArgument("apkUri") { type = NavType.StringType }),
         ) {
             DetailScreen(onBack = { navController.popBackStack() })
         }

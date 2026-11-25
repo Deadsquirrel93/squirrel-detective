@@ -1,5 +1,7 @@
 package com.packagespy.app.presentation.welcome
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -45,10 +48,16 @@ import com.packagespy.app.presentation.components.nutSpyTopAppBarColors
 fun WelcomeScreen(
     onStartFullScan: (includeSystem: Boolean) -> Unit,
     onChooseApp: () -> Unit,
+    onInspectApk: (String) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenWiki: () -> Unit,
 ) {
     var includeSystem by rememberSaveable { mutableStateOf(false) }
+    val apkPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) onInspectApk(uri.toString())
+    }
 
     NutSpyBackground {
         Scaffold(
@@ -96,6 +105,12 @@ fun WelcomeScreen(
                 )
 
                 SingleAppCard(onChooseApp = onChooseApp)
+
+                InspectApkCard(
+                    onPickApk = {
+                        apkPicker.launch(arrayOf("application/vnd.android.package-archive"))
+                    },
+                )
 
                 WikiCard(onOpenWiki = onOpenWiki)
             }
@@ -161,6 +176,26 @@ private fun SingleAppCard(onChooseApp: () -> Unit) {
             Icon(Icons.Default.Search, contentDescription = null)
             Spacer(Modifier.width(8.dp))
             Text(stringResource(R.string.choose_app))
+        }
+    }
+}
+
+@Composable
+private fun InspectApkCard(onPickApk: () -> Unit) {
+    NutSpyCard {
+        Text(
+            text = stringResource(R.string.mode_inspect_apk_title),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(R.string.mode_inspect_apk_body),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedButton(onClick = onPickApk, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Default.FolderOpen, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text(stringResource(R.string.choose_apk))
         }
     }
 }

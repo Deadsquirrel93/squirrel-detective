@@ -11,6 +11,9 @@
     <string name="mode_single_app_title">Сканировать конкретное приложение</string>
     <string name="mode_single_app_body">Выберите одно установленное приложение и посмотрите его разрешения, receiver\'ы и сигналы риска.</string>
     <string name="choose_app">Выбрать приложение</string>
+    <string name="mode_inspect_apk_title">Проверить APK-файл</string>
+    <string name="mode_inspect_apk_body">Посмотрите разрешения и сигналы риска скачанного APK ещё до его установки.</string>
+    <string name="choose_apk">Выбрать APK-файл</string>
     <string name="open_settings">Настройки</string>
 
     <string name="picker_title">Выберите приложение</string>
@@ -49,6 +52,22 @@
     <string name="results_safe_section">Безопасные приложения (%1$d)</string>
     <string name="results_rescan">Пересканировать</string>
     <string name="results_back">Назад</string>
+    <string name="results_search_hint">Поиск по названию, пакету или разрешению</string>
+    <string name="results_sort">Сортировка</string>
+    <string name="sort_by_risk">По уровню риска</string>
+    <string name="sort_recently_updated">Недавно обновлённые</string>
+
+    <string name="cap_filter_camera">Камера</string>
+    <string name="cap_filter_mic">Микрофон</string>
+    <string name="cap_filter_location">Геолокация</string>
+    <string name="cap_filter_bg_location">Фоновая геолокация</string>
+    <string name="cap_filter_sms">SMS</string>
+    <string name="cap_filter_contacts">Контакты</string>
+    <string name="cap_filter_accessibility">Спец. возможности</string>
+    <string name="cap_filter_notifications">Уведомления</string>
+    <string name="cap_filter_overlay">Поверх окон</string>
+    <string name="cap_filter_install_apk">Установка APK</string>
+    <string name="cap_filter_all_packages">Список приложений</string>
 
     <string name="filter_all">Все</string>
     <string name="filter_red">Высокий</string>
@@ -62,15 +81,45 @@
 
     <string name="detail_title_fallback">Подробности</string>
     <string name="detail_not_found">Приложение не найдено — возможно, оно удалено.</string>
+    <string name="detail_apk_invalid">Не удалось прочитать этот APK-файл.</string>
+    <string name="detail_apk_archive">APK-файл (не установлен)</string>
+    <string name="detail_section_combos">Что это даёт в связке</string>
     <string name="detail_section_findings">Что обнаружено</string>
     <string name="detail_section_permissions">Все разрешения (%1$d)</string>
+    <string name="detail_section_permissions_with_granted">Разрешения (%1$d, выдано: %2$d)</string>
     <string name="detail_section_receivers">Пакетные broadcast-receiver\'ы</string>
     <string name="detail_version_label">версия %1$s</string>
     <string name="detail_installer_label">установлено через: %1$s</string>
+    <string name="detail_target_sdk_label">targetSdk: API %1$d</string>
+    <string name="detail_installed_label">установлено: %1$s</string>
+    <string name="detail_updated_label">обновлено: %1$s</string>
     <string name="detail_system_app">Системное приложение</string>
+    <string name="detail_cleartext_traffic">Разрешён незашифрованный HTTP-трафик</string>
+    <string name="detail_trust_app">Доверять приложению</string>
+    <string name="detail_trusted_active">Доверенное (вами)</string>
     <string name="detail_short_default">Подозрительной активности не выявлено</string>
     <string name="detail_open_in_system_settings">Открыть в настройках системы</string>
     <string name="detail_open_in_system_settings_failed">Не удалось открыть системные настройки для этого приложения</string>
+    <string name="detail_share_report">Поделиться отчётом</string>
+    <string name="share_risk_label">Уровень риска</string>
+
+    <string name="detail_open_accessibility_settings">Настройки спец. возможностей</string>
+    <string name="detail_open_notification_settings">Доступ к уведомлениям</string>
+    <string name="detail_open_device_admin_settings">Администраторы устройства</string>
+    <string name="detail_open_keyboard_settings">Настройки клавиатур</string>
+    <string name="detail_open_overlay_settings">Поверх других приложений</string>
+    <string name="detail_open_usage_settings">Доступ к истории использования</string>
+    <string name="detail_open_install_settings">Установка неизвестных приложений</string>
+    <string name="detail_open_all_files_settings">Доступ ко всем файлам</string>
+    <string name="detail_open_write_settings">Изменение системных настроек</string>
+
+    <string name="permission_granted">Выдано</string>
+    <string name="permission_not_granted">Не выдано</string>
+    <string name="permission_level_dangerous">Runtime (опасное)</string>
+    <string name="permission_level_normal">Обычное (при установке)</string>
+    <string name="permission_level_signature">Системное / по подписи</string>
+    <string name="permission_level_other">Кастомное / вендорское</string>
+    <string name="permission_no_description">Это кастомное или вендорское разрешение — системного описания для него на устройстве нет.</string>
 
     <string name="settings_title">Настройки</string>
     <string name="language_title">Язык</string>
@@ -78,6 +127,13 @@
     <string name="language_system">Как в системе</string>
     <string name="language_russian">Русский</string>
     <string name="language_english">English</string>
+    <string name="updates_title">Обновления</string>
+    <string name="updates_current_version">Установленная версия: %1$s</string>
+    <string name="updates_body">У Squirrel Detective принципиально нет доступа в интернет. Проверяйте новые версии на GitHub Releases или отслеживайте их автоматически через Obtainium.</string>
+    <string name="updates_open_github">Открыть GitHub Releases</string>
+    <string name="updates_add_obtainium">Добавить в Obtainium</string>
+    <string name="updates_open_url_failed">Не удалось открыть браузер</string>
+    <string name="updates_obtainium_missing">Приложение Obtainium не установлено</string>
     <string name="about_title">О Squirrel Detective</string>
     <string name="about_body">Squirrel Detective — полностью офлайновый Android-аудитор. Перебирает установленные пакеты локально и подсвечивает приложения, которые могут молча сканировать другие. Никакой сети, никакой аналитики.</string>
 
@@ -150,12 +206,26 @@
     <string name="threat_no_launcher_short">Скрытое приложение — нет иконки</string>
     <string name="threat_no_launcher_full">У приложения нет launcher-активити, в шторке приложений его иконки нет. В сочетании с чувствительными разрешениями это типичный паттерн stalkerware.</string>
 
+    <string name="combo_banking_2fa_title">Подмена окон + перехват 2FA-кодов</string>
+    <string name="combo_banking_2fa_summary">Рисование поверх окон вместе с активными спец. возможностями, чтением уведомлений или SMS и интернетом позволяет подменять окна входа и перехватывать одноразовые коды банков.</string>
+    <string name="combo_silent_dropper_title">Тихая установка других APK (дроппер)</string>
+    <string name="combo_silent_dropper_summary">Интернет, право на установку APK и включённая служба спец. возможностей вместе позволяют скачать сторонний APK и автоматически нажать «Установить».</string>
+    <string name="combo_stalkerware_title">Профиль скрытой слежки (stalkerware)</string>
+    <string name="combo_stalkerware_summary">Сочетание сенсоров или трекинга (геолокация, микрофон, камера, история приложений) со скрытой иконкой, автозапуском или фоновой геолокацией — характерный паттерн слежки.</string>
+    <string name="combo_uninstall_lock_title">Затруднённое удаление (блокировка)</string>
+    <string name="combo_uninstall_lock_summary">Активный администратор устройства вместе с наложением окон или спец. возможностями может мешать открыть настройки и не давать удалить приложение.</string>
+    <string name="combo_profiling_title">Глубокий цифровой профиль устройства</string>
+    <string name="combo_profiling_summary">Полный список приложений вместе с идентификаторами устройства, аккаунтами или геолокацией и интернетом позволяет строить устойчивый профиль пользователя.</string>
+
     <string name="wiki_title">Wiki по разрешениям</string>
     <string name="wiki_card_title">Wiki по разрешениям</string>
     <string name="wiki_card_body">Понятная справка по тому, что даёт каждое Android-разрешение. Чтобы не лезть в Google.</string>
     <string name="wiki_open">Открыть Wiki</string>
     <string name="wiki_intro">Короткий человеческий справочник по разрешениям Android. Нажмите на категорию, чтобы развернуть.</string>
+    <string name="wiki_search_hint">Поиск по разрешениям и темам</string>
+    <string name="wiki_no_results">Ничего не найдено</string>
 
+    <string name="wiki_category_combos">Опасные связки разрешений</string>
     <string name="wiki_category_visibility">Наблюдение и мониторинг</string>
     <string name="wiki_category_services">Мощные системные сервисы</string>
     <string name="wiki_category_sensors">Сенсоры</string>
@@ -250,6 +320,30 @@
 
     <string name="wiki_wake_lock_title">WAKE_LOCK</string>
     <string name="wiki_wake_lock_body">Удерживает процессор или экран в активном состоянии. Используется плеерами, будильниками и загрузчиками. Влияет на батарею, но не на приватность.</string>
+
+    <string name="wiki_body_sensors_title">BODY_SENSORS / ACTIVITY_RECOGNITION</string>
+    <string name="wiki_body_sensors_body">Читает биометрические сенсоры (пульс) или физическую активность (ходьба, поездка). Ожидаемо для фитнес-трекеров, остальным не нужно.</string>
+
+    <string name="wiki_calendar_title">READ_CALENDAR / WRITE_CALENDAR</string>
+    <string name="wiki_calendar_body">Читает или меняет события календаря, участников и места встреч. Вместе с интернетом может раскрывать ваш распорядок дня.</string>
+
+    <string name="wiki_nearby_devices_title">BLUETOOTH_SCAN / NEARBY_WIFI_DEVICES</string>
+    <string name="wiki_nearby_devices_body">Ищет и подключает ближайшие Bluetooth- и Wi-Fi-устройства. Нужно наушникам, часам и трансляции — но может косвенно выдавать местоположение по маячкам вокруг.</string>
+
+    <string name="wiki_read_media_title">READ_MEDIA_IMAGES / VIDEO / AUDIO</string>
+    <string name="wiki_read_media_body">Раздельный доступ Android 13+ к фото, видео или аудио. Безопаснее полного доступа к хранилищу, но всё равно открывает личные снимки и их метаданные.</string>
+
+    <string name="wiki_battery_opt_title">REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</string>
+    <string name="wiki_battery_opt_body">Просит Android отключить энергосбережение Doze для приложения, чтобы оно работало в фоне без ограничений. Полезно мессенджерам и трекерам, ускоряет разряд батареи.</string>
+
+    <string name="wiki_exact_alarm_title">SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM</string>
+    <string name="wiki_exact_alarm_body">Будит приложение в точное время. Стандартно для будильников, напоминаний и календарей; обычным приложениям нужно редко.</string>
+
+    <string name="wiki_full_screen_intent_title">USE_FULL_SCREEN_INTENT</string>
+    <string name="wiki_full_screen_intent_body">Позволяет показывать полноэкранные уведомления (входящие звонки, будильник) поверх экрана блокировки. Иногда злоупотребляется рекламой для всплывающих окон.</string>
+
+    <string name="whitelist_user_trusted_short">Вы доверяете этому приложению</string>
+    <string name="whitelist_user_trusted_full">Вы добавили приложение в личный белый список. Его текущие находки понижены до «Ожидаем», но Squirrel Detective всё равно предупредит в баннере изменений, если появятся новые разрешения или возможности.</string>
 
     <string name="whitelist_launcher_short">Лаунчер — доступ к списку приложений ожидаем</string>
     <string name="whitelist_launcher_full">Это лаунчер. Он обязан перечислять установленные приложения, чтобы рисовать иконки на рабочем столе. В этом контексте QUERY_ALL_PACKAGES — нормальное поведение.</string>

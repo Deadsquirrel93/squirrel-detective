@@ -16,16 +16,17 @@ Read this in Russian: [README.ru.md](README.ru.md).
 
 Squirrel Detective lets you:
 
-- scan every installed app on the device, with an option to include system apps
-- inspect a single chosen app instead of running a full scan
-- see a per-app risk level (`HIGH` / `MEDIUM` / `EXPECTED` / `SAFE`) with a plain-language explanation of every finding
-- read every Android permission an app declares
+- scan every installed app on the device, with an option to include system apps, search by app/package/permission, filter by capability, and sort by risk or recent updates
+- inspect a single chosen app or an uninstalled `.apk` file before installing it
+- see a per-app risk level (`HIGH` / `MEDIUM` / `EXPECTED` / `SAFE`), high-level combination summaries ("What these allow together"), and a plain-language explanation of every finding
+- read every Android permission an app declares, see whether runtime permissions are actually granted, and tap any permission for a Wiki or system description
 - read every package-related broadcast receiver an app declares (`PACKAGE_ADDED` / `PACKAGE_REMOVED` / `BOOT_COMPLETED`)
-- jump from any report straight into Android system settings for that app, to revoke permissions or uninstall it
+- jump from any finding straight into the relevant Android system settings screen (Accessibility, Notification access, Device admin, Overlay, Usage access, etc.), or share a plain-text report
+- mark apps you trust in a local personal whitelist without suppressing future diff alerts
 - compare scans: when an app gains new sensitive permissions or findings between scans, it is flagged until you open the changes banner
 - see whether an accessibility service, device admin, keyboard or notification listener is merely declared or actually turned on right now
-- browse a built-in Permission Wiki that explains, in plain language, what each Android permission actually grants
-- switch the entire interface between Russian and English at any time
+- search a built-in Permission Wiki covering Android permissions and dangerous permission combinations
+- switch the entire interface between Russian and English at any time, and track releases on GitHub or via Obtainium from Settings (still with zero network permissions)
 
 ## What Squirrel Detective Detects
 

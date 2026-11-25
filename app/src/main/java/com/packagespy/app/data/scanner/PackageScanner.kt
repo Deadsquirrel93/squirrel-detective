@@ -5,12 +5,14 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.net.toUri
 import com.packagespy.app.domain.model.AppRiskInfo
 import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.InstalledAppSummary
 import com.packagespy.app.domain.model.ReceiverInfo
 import com.packagespy.app.domain.usecase.RiskScorer
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,6 +31,7 @@ class PackageScanner @Inject constructor(
 
     fun scanAll(
         includeSystem: Boolean,
+        trustedPackages: Set<String> = emptySet(),
         onProgress: ((current: Int, total: Int) -> Unit)? = null,
     ): List<AppRiskInfo> {
         val packages = installedPackages().filter { info ->
@@ -41,7 +44,7 @@ class PackageScanner @Inject constructor(
         val result = ArrayList<AppRiskInfo>(total)
         packages.forEachIndexed { index, info ->
             try {
-                result += buildRiskInfo(info, receiverIndex, active)
+                result += buildRiskInfo(info, receiverIndex, active, trustedPackages)
             } catch (_: Throwable) {
                 // Defensive: never let one broken package abort the whole scan.
             }
@@ -50,11 +53,90 @@ class PackageScanner @Inject constructor(
         return result
     }
 
-    fun scanSingle(packageName: String): AppRiskInfo? {
+    fun scanSingle(
+        packageName: String,
+        trustedPackages: Set<String> = emptySet(),
+    ): AppRiskInfo? {
         val info = packageInfo(packageName) ?: return null
         val receiverIndex = buildReceiverActionIndex(queryReceiverActionHits(packageName))
         val active = activeComponentsReader.read()
-        return runCatching { buildRiskInfo(info, receiverIndex, active) }.getOrNull()
+        return runCatching { buildRiskInfo(info, receiverIndex, active, trustedPackages) }.getOrNull()
+    }
+
+    /**
+     * Copies the APK referenced by [uriString] to a temporary cache file,
+     * inspects its manifest via [PackageManager.getPackageArchiveInfo], and
+     * deletes the temp file immediately. Requires no storage permissions.
+     */
+    fun scanApk(uriString: String): AppRiskInfo? {
+        val uri = runCatching { uriString.toUri() }.getOrNull() ?: return null
+        val tempFile = runCatching {
+            File.createTempFile("inspect_", ".apk", context.cacheDir)
+        }.getOrNull() ?: return null
+        return try {
+            val copied = context.contentResolver.openInputStream(uri)?.use { input ->
+                tempFile.outputStream().use { output -> input.copyTo(output) }
+                true
+            } ?: false
+            if (!copied) return null
+
+            val info = archiveInfo(tempFile.absolutePath) ?: return null
+            val appInfo = info.applicationInfo?.apply {
+                sourceDir = tempFile.absolutePath
+                publicSourceDir = tempFile.absolutePath
+            }
+            val appName = appInfo?.loadLabel(pm)?.toString()?.takeIf { it.isNotBlank() }
+                ?: info.packageName
+            val isDebuggable = appInfo != null &&
+                (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+            val usesCleartextTraffic = appInfo != null &&
+                (appInfo.flags and ApplicationInfo.FLAG_USES_CLEARTEXT_TRAFFIC) != 0
+            val targetSdk = appInfo?.targetSdkVersion ?: 0
+            val permissions = info.requestedPermissions?.toList().orEmpty()
+            val receivers = info.receivers.orEmpty().map { activityInfo ->
+                ReceiverInfo(
+                    name = activityInfo.name ?: "",
+                    actions = emptyList(),
+                    permission = activityInfo.permission,
+                )
+            }
+            val services = info.services.orEmpty().map { serviceInfo ->
+                DeclaredService(name = serviceInfo.name ?: "", permission = serviceInfo.permission)
+            }
+
+            riskScorer.score(
+                RiskScorer.Inputs(
+                    packageName = info.packageName,
+                    appName = appName,
+                    versionName = info.versionName,
+                    isSystemApp = false,
+                    installerPackage = null,
+                    permissions = permissions,
+                    receivers = receivers,
+                    services = services,
+                    isDebuggable = isDebuggable,
+                    targetSdk = targetSdk,
+                    hasLauncherIntent = true,
+                    trustSource = null,
+                    activeCapabilities = emptySet(),
+                    grantedPermissions = null,
+                    usesCleartextTraffic = usesCleartextTraffic,
+                ),
+            ).copy(isArchive = true)
+        } catch (_: Throwable) {
+            null
+        } finally {
+            tempFile.delete()
+        }
+    }
+
+    private fun archiveInfo(apkPath: String): PackageInfo? {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pm.getPackageArchiveInfo(apkPath, PackageManager.PackageInfoFlags.of(SCAN_FLAGS.toLong()))
+        } else {
+            @Suppress("DEPRECATION")
+            pm.getPackageArchiveInfo(apkPath, SCAN_FLAGS)
+        }
     }
 
     fun listInstalled(includeSystem: Boolean): List<InstalledAppSummary> {
@@ -70,7 +152,7 @@ class PackageScanner @Inject constructor(
             if (!includeSystem && isSystem) return@mapNotNull null
             InstalledAppSummary(
                 packageName = info.packageName,
-                appName = appInfo.loadLabel(pm)?.toString() ?: info.packageName,
+                appName = appInfo.loadLabel(pm).toString().ifBlank { info.packageName },
                 isSystemApp = isSystem,
             )
         }.sortedBy { it.appName.lowercase() }
@@ -107,6 +189,7 @@ class PackageScanner @Inject constructor(
         info: PackageInfo,
         receiverIndex: Map<ReceiverKey, List<String>>,
         active: ActiveComponents,
+        trustedPackages: Set<String>,
     ): AppRiskInfo {
         val appInfo = info.applicationInfo
         val appName = appInfo?.loadLabel(pm)?.toString() ?: info.packageName
@@ -114,9 +197,14 @@ class PackageScanner @Inject constructor(
             (appInfo.flags and ApplicationInfo.FLAG_SYSTEM) != 0
         val isDebuggable = appInfo != null &&
             (appInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
+        val usesCleartextTraffic = appInfo != null &&
+            (appInfo.flags and ApplicationInfo.FLAG_USES_CLEARTEXT_TRAFFIC) != 0
         val targetSdk = appInfo?.targetSdkVersion ?: 0
         val installSource = installSourceOf(info.packageName)
-        val permissions = info.requestedPermissions?.toList().orEmpty()
+        val rawPermissions = info.requestedPermissions
+        val rawFlags = info.requestedPermissionsFlags
+        val permissions = rawPermissions?.toList().orEmpty()
+        val grantedPermissions = extractGrantedPermissions(rawPermissions, rawFlags)
         val receivers = info.receivers.orEmpty().map { activityInfo ->
             val name = activityInfo.name ?: ""
             ReceiverInfo(
@@ -152,6 +240,11 @@ class PackageScanner @Inject constructor(
                     installSource.installing,
                 ),
                 activeCapabilities = activeCapabilitiesOf(info.packageName, active),
+                grantedPermissions = grantedPermissions,
+                firstInstallTime = info.firstInstallTime,
+                lastUpdateTime = info.lastUpdateTime,
+                usesCleartextTraffic = usesCleartextTraffic,
+                isUserTrusted = info.packageName in trustedPackages,
             )
         )
     }
@@ -225,4 +318,26 @@ class PackageScanner @Inject constructor(
         private const val SCAN_FLAGS =
             PackageManager.GET_PERMISSIONS or PackageManager.GET_RECEIVERS or PackageManager.GET_SERVICES
     }
+}
+
+/**
+ * Extracts permissions whose `REQUESTED_PERMISSION_GRANTED` bit is set.
+ * If [flags] is null (some OEMs / synthetic packages), falls back to treating
+ * all declared [permissions] as granted to avoid hiding findings.
+ */
+internal fun extractGrantedPermissions(
+    permissions: Array<String>?,
+    flags: IntArray?,
+    grantedFlag: Int = PackageInfo.REQUESTED_PERMISSION_GRANTED,
+): Set<String> {
+    if (permissions.isNullOrEmpty()) return emptySet()
+    if (flags == null) return permissions.toSet()
+    val result = HashSet<String>(permissions.size)
+    val count = minOf(permissions.size, flags.size)
+    for (i in 0 until count) {
+        if ((flags[i] and grantedFlag) != 0) {
+            result += permissions[i]
+        }
+    }
+    return result
 }

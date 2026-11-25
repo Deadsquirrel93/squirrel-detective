@@ -32,4 +32,10 @@ interface AppRiskRepository {
 
     /** Single-app scan that bypasses the cache and persistence. */
     suspend fun scanSingle(packageName: String): AppRiskInfo?
+
+    /** Inspects an uninstalled APK file via a content URI without installing it. */
+    suspend fun scanApk(uriString: String): AppRiskInfo?
+
+    /** Adds or removes [packageName] from the user's personal trusted list. */
+    suspend fun setTrusted(packageName: String, trusted: Boolean)
 }

@@ -4,11 +4,13 @@ import android.Manifest
 import com.packagespy.app.R
 import com.packagespy.app.domain.model.ActiveCapability
 import com.packagespy.app.domain.model.AppRiskInfo
+import com.packagespy.app.domain.model.ComboId
 import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.KnownLegitimateApps
 import com.packagespy.app.domain.model.LegitimateCategory
 import com.packagespy.app.domain.model.ReceiverInfo
 import com.packagespy.app.domain.model.RiskLevel
+import com.packagespy.app.domain.model.ThreatCombo
 import com.packagespy.app.domain.model.ThreatId
 import com.packagespy.app.domain.model.ThreatReason
 import javax.inject.Inject
@@ -47,10 +49,21 @@ class RiskScorer @Inject constructor() {
         val hasLauncherIntent: Boolean = true,
         val trustSource: String? = null,
         val activeCapabilities: Set<ActiveCapability> = emptySet(),
+        /**
+         * Permissions currently granted to the app (from `REQUESTED_PERMISSION_GRANTED`).
+         * When `null`, all declared permissions are treated as granted (preserves legacy callers).
+         */
+        val grantedPermissions: Set<String>? = null,
+        val firstInstallTime: Long = 0L,
+        val lastUpdateTime: Long = 0L,
+        val usesCleartextTraffic: Boolean = false,
+        val isUserTrusted: Boolean = false,
     )
 
     fun score(inputs: Inputs): AppRiskInfo {
         val permSet = inputs.permissions.toSet()
+        val granted = inputs.grantedPermissions ?: permSet
+        fun isGranted(permission: String): Boolean = permission in permSet && permission in granted
         val hasInternet = Manifest.permission.INTERNET in permSet
         val reasons = mutableListOf<ThreatReason>()
 
@@ -101,7 +114,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (Manifest.permission.GET_ACCOUNTS in permSet && hasInternet) {
+        if (isGranted(Manifest.permission.GET_ACCOUNTS) && hasInternet) {
             reasons += reason(
                 ThreatId.GET_ACCOUNTS,
                 R.string.threat_get_accounts_short,
@@ -198,9 +211,9 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        // ---- Sensitive media / messaging access ----
+        // ---- Sensitive media / messaging access (runtime-granted only) ----
 
-        if (Manifest.permission.RECORD_AUDIO in permSet && hasInternet) {
+        if (isGranted(Manifest.permission.RECORD_AUDIO) && hasInternet) {
             reasons += reason(
                 ThreatId.RECORD_AUDIO_PLUS_INTERNET,
                 R.string.threat_record_audio_internet_short,
@@ -209,7 +222,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (Manifest.permission.CAMERA in permSet && hasInternet) {
+        if (isGranted(Manifest.permission.CAMERA) && hasInternet) {
             reasons += reason(
                 ThreatId.CAMERA_PLUS_INTERNET,
                 R.string.threat_camera_internet_short,
@@ -225,7 +238,7 @@ class RiskScorer @Inject constructor() {
             Manifest.permission.RECEIVE_MMS,
             Manifest.permission.RECEIVE_WAP_PUSH,
         )
-        if (smsPerms.any { it in permSet }) {
+        if (smsPerms.any { isGranted(it) }) {
             reasons += reason(
                 ThreatId.SMS_ACCESS,
                 R.string.threat_sms_short,
@@ -234,7 +247,7 @@ class RiskScorer @Inject constructor() {
             )
         }
 
-        if (Manifest.permission.READ_CONTACTS in permSet && hasInternet) {
+        if (isGranted(Manifest.permission.READ_CONTACTS) && hasInternet) {
             reasons += reason(
                 ThreatId.CONTACTS_PLUS_INTERNET,
                 R.string.threat_contacts_internet_short,
@@ -248,7 +261,7 @@ class RiskScorer @Inject constructor() {
             Manifest.permission.WRITE_CALL_LOG,
             Manifest.permission.PROCESS_OUTGOING_CALLS,
         )
-        if (callLogPerms.any { it in permSet }) {
+        if (callLogPerms.any { isGranted(it) }) {
             reasons += reason(
                 ThreatId.CALL_LOG_ACCESS,
                 R.string.threat_call_log_short,
@@ -261,7 +274,7 @@ class RiskScorer @Inject constructor() {
             Manifest.permission.READ_PHONE_STATE,
             READ_PHONE_NUMBERS,
         )
-        if (phoneStatePerms.any { it in permSet }) {
+        if (phoneStatePerms.any { isGranted(it) }) {
             reasons += reason(
                 ThreatId.PHONE_STATE_ACCESS,
                 R.string.threat_phone_state_short,
@@ -275,7 +288,7 @@ class RiskScorer @Inject constructor() {
             Manifest.permission.ACCESS_COARSE_LOCATION,
             ACCESS_BACKGROUND_LOCATION,
         )
-        if (locationPerms.any { it in permSet } && hasInternet) {
+        if (locationPerms.any { isGranted(it) } && hasInternet) {
             reasons += reason(
                 ThreatId.LOCATION_PLUS_INTERNET,
                 R.string.threat_location_internet_short,
@@ -389,22 +402,32 @@ class RiskScorer @Inject constructor() {
             }
         }
 
-        // ---- Whitelist downgrade ----
+        // ---- High-level combination summaries ----
+
+        val combos = detectCombos(
+            reasonIds = reasons.map { it.id }.toSet(),
+            hasInternet = hasInternet,
+            hasBackgroundLocationGranted = isGranted(ACCESS_BACKGROUND_LOCATION),
+        )
+
+        // ---- Whitelist downgrade (built-in or user-trusted) ----
 
         val legitimateCategory = KnownLegitimateApps.categorize(
             inputs.packageName,
             inputs.isSystemApp,
             inputs.trustSource,
         )
-        val finalReasons = if (legitimateCategory != null && reasons.isNotEmpty()) {
-            listOf(legitimateReason(legitimateCategory)) + reasons
-        } else {
-            reasons
+        val isWhitelisted = legitimateCategory != null || inputs.isUserTrusted
+        val finalReasons = when {
+            reasons.isEmpty() -> reasons
+            legitimateCategory != null -> listOf(legitimateReason(legitimateCategory)) + reasons
+            inputs.isUserTrusted -> listOf(userTrustedReason()) + reasons
+            else -> reasons
         }
 
         val aggregate = aggregateLevel(
             reasons = finalReasons,
-            legitimateCategory = legitimateCategory,
+            isWhitelisted = isWhitelisted,
             isSystemApp = inputs.isSystemApp,
         )
 
@@ -418,8 +441,107 @@ class RiskScorer @Inject constructor() {
             receivers = inputs.receivers,
             reasons = finalReasons,
             riskLevel = aggregate,
+            grantedPermissions = granted intersect permSet,
+            combos = combos,
+            targetSdk = inputs.targetSdk,
+            firstInstallTime = inputs.firstInstallTime,
+            lastUpdateTime = inputs.lastUpdateTime,
+            usesCleartextTraffic = inputs.usesCleartextTraffic,
+            isUserTrusted = inputs.isUserTrusted,
         )
     }
+
+    private fun detectCombos(
+        reasonIds: Set<ThreatId>,
+        hasInternet: Boolean,
+        hasBackgroundLocationGranted: Boolean,
+    ): List<ThreatCombo> {
+        val combos = mutableListOf<ThreatCombo>()
+
+        val canReadCodesOrScreen = ThreatId.ACCESSIBILITY_ENABLED in reasonIds ||
+            ThreatId.NOTIFICATION_LISTENER_ENABLED in reasonIds ||
+            ThreatId.SMS_ACCESS in reasonIds
+        if (ThreatId.OVERLAY_WINDOW in reasonIds && canReadCodesOrScreen && hasInternet) {
+            combos += ThreatCombo(
+                id = ComboId.BANKING_TROJAN_2FA,
+                titleRes = R.string.combo_banking_2fa_title,
+                summaryRes = R.string.combo_banking_2fa_summary,
+                severity = RiskLevel.RED,
+            )
+        }
+
+        if (
+            ThreatId.REQUEST_INSTALL_PACKAGES in reasonIds &&
+            ThreatId.ACCESSIBILITY_ENABLED in reasonIds &&
+            hasInternet
+        ) {
+            combos += ThreatCombo(
+                id = ComboId.SILENT_DROPPER,
+                titleRes = R.string.combo_silent_dropper_title,
+                summaryRes = R.string.combo_silent_dropper_summary,
+                severity = RiskLevel.RED,
+            )
+        }
+
+        val hasSurveillanceSensor = ThreatId.LOCATION_PLUS_INTERNET in reasonIds ||
+            ThreatId.RECORD_AUDIO_PLUS_INTERNET in reasonIds ||
+            ThreatId.CAMERA_PLUS_INTERNET in reasonIds ||
+            ThreatId.PACKAGE_USAGE_STATS in reasonIds
+        val hasStealthOrPersistence = ThreatId.HIDDEN_NO_LAUNCHER in reasonIds ||
+            ThreatId.RECEIVER_BOOT_WITH_PACKAGE_PERMISSION in reasonIds ||
+            (
+                hasBackgroundLocationGranted && (
+                    ThreatId.RECORD_AUDIO_PLUS_INTERNET in reasonIds ||
+                        ThreatId.CAMERA_PLUS_INTERNET in reasonIds ||
+                        ThreatId.SMS_ACCESS in reasonIds
+                    )
+                )
+        if (hasSurveillanceSensor && hasStealthOrPersistence) {
+            combos += ThreatCombo(
+                id = ComboId.STALKERWARE_SURVEILLANCE,
+                titleRes = R.string.combo_stalkerware_title,
+                summaryRes = R.string.combo_stalkerware_summary,
+                severity = RiskLevel.RED,
+            )
+        }
+
+        if (
+            ThreatId.DEVICE_ADMIN_ACTIVE in reasonIds &&
+            (ThreatId.OVERLAY_WINDOW in reasonIds || ThreatId.ACCESSIBILITY_ENABLED in reasonIds)
+        ) {
+            combos += ThreatCombo(
+                id = ComboId.UNINSTALL_LOCK,
+                titleRes = R.string.combo_uninstall_lock_title,
+                summaryRes = R.string.combo_uninstall_lock_summary,
+                severity = RiskLevel.RED,
+            )
+        }
+
+        if (
+            ThreatId.QUERY_ALL_PACKAGES_PLUS_INTERNET in reasonIds &&
+            (
+                ThreatId.PHONE_STATE_ACCESS in reasonIds ||
+                    ThreatId.GET_ACCOUNTS in reasonIds ||
+                    ThreatId.LOCATION_PLUS_INTERNET in reasonIds
+                )
+        ) {
+            combos += ThreatCombo(
+                id = ComboId.DEVICE_PROFILING,
+                titleRes = R.string.combo_profiling_title,
+                summaryRes = R.string.combo_profiling_summary,
+                severity = RiskLevel.YELLOW,
+            )
+        }
+
+        return combos
+    }
+
+    private fun userTrustedReason(): ThreatReason = reason(
+        ThreatId.USER_TRUSTED,
+        R.string.whitelist_user_trusted_short,
+        R.string.whitelist_user_trusted_full,
+        RiskLevel.GREEN,
+    )
 
     private fun reason(
         id: ThreatId,
@@ -462,11 +584,11 @@ class RiskScorer @Inject constructor() {
 
     private fun aggregateLevel(
         reasons: List<ThreatReason>,
-        legitimateCategory: LegitimateCategory?,
+        isWhitelisted: Boolean,
         isSystemApp: Boolean,
     ): RiskLevel {
         if (reasons.isEmpty()) return RiskLevel.SAFE
-        if (legitimateCategory != null) return RiskLevel.GREEN
+        if (isWhitelisted) return RiskLevel.GREEN
         val maxSeverity = reasons.maxBy { -it.severity.sortOrder }.severity
         return if (isSystemApp && maxSeverity == RiskLevel.RED) RiskLevel.YELLOW
         else maxSeverity

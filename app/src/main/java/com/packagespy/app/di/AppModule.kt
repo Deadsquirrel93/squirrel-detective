@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.packagespy.app.data.local.AppSnapshotDao
 import com.packagespy.app.data.local.PackageSpyDatabase
+import com.packagespy.app.data.local.TrustedAppDao
 import com.packagespy.app.data.repository.AppRiskRepositoryImpl
 import com.packagespy.app.domain.repository.AppRiskRepository
 import dagger.Binds
@@ -25,11 +26,16 @@ object DataModule {
             context,
             PackageSpyDatabase::class.java,
             "package_spy.db"
-        ).build()
+        )
+            .addMigrations(PackageSpyDatabase.MIGRATION_1_2)
+            .build()
     }
 
     @Provides
     fun provideSnapshotDao(db: PackageSpyDatabase): AppSnapshotDao = db.snapshotDao()
+
+    @Provides
+    fun provideTrustedAppDao(db: PackageSpyDatabase): TrustedAppDao = db.trustedAppDao()
 }
 
 @Module

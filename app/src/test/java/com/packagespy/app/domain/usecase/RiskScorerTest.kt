@@ -3,6 +3,7 @@ package com.packagespy.app.domain.usecase
 import android.Manifest
 import com.packagespy.app.domain.model.ActiveCapability
 import com.packagespy.app.domain.model.AppRiskInfo
+import com.packagespy.app.domain.model.ComboId
 import com.packagespy.app.domain.model.DeclaredService
 import com.packagespy.app.domain.model.ReceiverInfo
 import com.packagespy.app.domain.model.RiskLevel
@@ -35,6 +36,11 @@ class RiskScorerTest {
         hasLauncherIntent: Boolean = true,
         trustSource: String? = null,
         activeCapabilities: Set<ActiveCapability> = emptySet(),
+        grantedPermissions: Set<String>? = null,
+        firstInstallTime: Long = 0L,
+        lastUpdateTime: Long = 0L,
+        usesCleartextTraffic: Boolean = false,
+        isUserTrusted: Boolean = false,
     ) = RiskScorer.Inputs(
         packageName = packageName,
         appName = appName,
@@ -49,6 +55,11 @@ class RiskScorerTest {
         hasLauncherIntent = hasLauncherIntent,
         trustSource = trustSource,
         activeCapabilities = activeCapabilities,
+        grantedPermissions = grantedPermissions,
+        firstInstallTime = firstInstallTime,
+        lastUpdateTime = lastUpdateTime,
+        usesCleartextTraffic = usesCleartextTraffic,
+        isUserTrusted = isUserTrusted,
     )
 
     private fun ids(result: AppRiskInfo): List<ThreatId> = result.reasons.map { it.id }
@@ -678,10 +689,152 @@ class RiskScorerTest {
         val permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET)
         val receivers = listOf(ReceiverInfo("Rcvr", listOf(RiskScorer.ACTION_PACKAGE_ADDED)))
         val result = scorer.score(
-            inputs(packageName = "com.example.spy", permissions = permissions, receivers = receivers)
+            inputs(
+                packageName = "com.example.spy",
+                permissions = permissions,
+                receivers = receivers,
+                targetSdk = 35,
+                firstInstallTime = 100L,
+                lastUpdateTime = 200L,
+                usesCleartextTraffic = true,
+            )
         )
         assertEquals("com.example.spy", result.packageName)
         assertEquals(permissions, result.permissions)
         assertEquals(receivers, result.receivers)
+        assertEquals(35, result.targetSdk)
+        assertEquals(100L, result.firstInstallTime)
+        assertEquals(200L, result.lastUpdateTime)
+        assertTrue(result.usesCleartextTraffic)
+    }
+
+    // ---- 14: runtime permission grant filtering ----
+
+    @Test
+    fun `denied runtime permissions are not flagged as findings`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.READ_SMS,
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                ),
+                grantedPermissions = setOf(Manifest.permission.INTERNET),
+            )
+        )
+        assertTrue(result.reasons.isEmpty())
+        assertEquals(RiskLevel.SAFE, result.riskLevel)
+        assertEquals(setOf(Manifest.permission.INTERNET), result.grantedPermissions)
+    }
+
+    @Test
+    fun `granted runtime permission is flagged while denied sibling is skipped`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.READ_SMS,
+                ),
+                grantedPermissions = setOf(Manifest.permission.INTERNET, Manifest.permission.CAMERA),
+            )
+        )
+        assertEquals(listOf(ThreatId.CAMERA_PLUS_INTERNET), ids(result))
+        assertEquals(RiskLevel.YELLOW, result.riskLevel)
+    }
+
+    // ---- 15: high-level threat combos ----
+
+    @Test
+    fun `overlay plus enabled accessibility plus internet produces banking 2FA combo`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(RiskScorer.SYSTEM_ALERT_WINDOW, Manifest.permission.INTERNET),
+                activeCapabilities = setOf(ActiveCapability.ACCESSIBILITY),
+            )
+        )
+        assertTrue(ComboId.BANKING_TROJAN_2FA in result.combos.map { it.id })
+    }
+
+    @Test
+    fun `install packages plus enabled accessibility plus internet produces silent dropper combo`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(RiskScorer.REQUEST_INSTALL_PACKAGES, Manifest.permission.INTERNET),
+                activeCapabilities = setOf(ActiveCapability.ACCESSIBILITY),
+            )
+        )
+        assertTrue(ComboId.SILENT_DROPPER in result.combos.map { it.id })
+    }
+
+    @Test
+    fun `hidden app with microphone and internet produces stalkerware combo`() {
+        val result = scorer.score(
+            inputs(
+                hasLauncherIntent = false,
+                permissions = listOf(Manifest.permission.RECORD_AUDIO, Manifest.permission.INTERNET),
+            )
+        )
+        assertTrue(ComboId.STALKERWARE_SURVEILLANCE in result.combos.map { it.id })
+    }
+
+    @Test
+    fun `background location alone without stealth or other sensors does not trigger stalkerware combo`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(RiskScorer.ACCESS_BACKGROUND_LOCATION, Manifest.permission.INTERNET),
+            )
+        )
+        assertTrue(ComboId.STALKERWARE_SURVEILLANCE !in result.combos.map { it.id })
+    }
+
+    @Test
+    fun `active device admin with overlay produces uninstall lock combo`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(RiskScorer.SYSTEM_ALERT_WINDOW),
+                activeCapabilities = setOf(ActiveCapability.DEVICE_ADMIN),
+            )
+        )
+        assertTrue(ComboId.UNINSTALL_LOCK in result.combos.map { it.id })
+    }
+
+    @Test
+    fun `query all packages plus phone state plus internet produces profiling combo`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(
+                    RiskScorer.QUERY_ALL_PACKAGES,
+                    Manifest.permission.READ_PHONE_STATE,
+                    Manifest.permission.INTERNET,
+                ),
+            )
+        )
+        assertTrue(ComboId.DEVICE_PROFILING in result.combos.map { it.id })
+    }
+
+    // ---- 16: personal trusted list ----
+
+    @Test
+    fun `user-trusted app with findings is downgraded to GREEN with USER_TRUSTED first`() {
+        val result = scorer.score(
+            inputs(
+                permissions = listOf(RiskScorer.QUERY_ALL_PACKAGES, Manifest.permission.INTERNET),
+                isUserTrusted = true,
+            )
+        )
+        assertEquals(RiskLevel.GREEN, result.riskLevel)
+        assertEquals(ThreatId.USER_TRUSTED, result.reasons.first().id)
+        assertTrue(result.isUserTrusted)
+    }
+
+    @Test
+    fun `user-trusted app with no findings stays SAFE`() {
+        val result = scorer.score(inputs(isUserTrusted = true))
+        assertEquals(RiskLevel.SAFE, result.riskLevel)
+        assertTrue(result.reasons.isEmpty())
+        assertTrue(result.isUserTrusted)
     }
 }

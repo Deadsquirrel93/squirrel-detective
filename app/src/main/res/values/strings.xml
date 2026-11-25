@@ -12,6 +12,9 @@
     <string name="mode_single_app_title">Scan a specific app</string>
     <string name="mode_single_app_body">Pick one installed app and review its permissions, receivers, and risk signals.</string>
     <string name="choose_app">Choose app</string>
+    <string name="mode_inspect_apk_title">Inspect an APK file</string>
+    <string name="mode_inspect_apk_body">Check permissions and risk signals of a downloaded APK before installing it.</string>
+    <string name="choose_apk">Choose APK file</string>
     <string name="open_settings">Settings</string>
 
     <!-- Picker -->
@@ -46,6 +49,23 @@
     <string name="results_safe_section">Safe apps (%1$d)</string>
     <string name="results_rescan">Rescan</string>
     <string name="results_back">Back</string>
+    <string name="results_search_hint">Search by app, package, or permission</string>
+    <string name="results_sort">Sort</string>
+    <string name="sort_by_risk">By risk</string>
+    <string name="sort_recently_updated">Recently updated</string>
+
+    <!-- Capability filters -->
+    <string name="cap_filter_camera">Camera</string>
+    <string name="cap_filter_mic">Microphone</string>
+    <string name="cap_filter_location">Location</string>
+    <string name="cap_filter_bg_location">Background location</string>
+    <string name="cap_filter_sms">SMS</string>
+    <string name="cap_filter_contacts">Contacts</string>
+    <string name="cap_filter_accessibility">Accessibility</string>
+    <string name="cap_filter_notifications">Notifications</string>
+    <string name="cap_filter_overlay">Overlay</string>
+    <string name="cap_filter_install_apk">Install APK</string>
+    <string name="cap_filter_all_packages">All apps list</string>
 
     <!-- Filters -->
     <string name="filter_all">All</string>
@@ -62,15 +82,45 @@
     <!-- Detail -->
     <string name="detail_title_fallback">Details</string>
     <string name="detail_not_found">App not found — it may have been uninstalled.</string>
+    <string name="detail_apk_invalid">Could not read this APK file.</string>
+    <string name="detail_apk_archive">APK file (not installed)</string>
+    <string name="detail_section_combos">What these allow together</string>
     <string name="detail_section_findings">What we found</string>
     <string name="detail_section_permissions">All permissions (%1$d)</string>
+    <string name="detail_section_permissions_with_granted">Permissions (%1$d, granted: %2$d)</string>
     <string name="detail_section_receivers">Package broadcast receivers</string>
     <string name="detail_version_label">version %1$s</string>
     <string name="detail_installer_label">installed via: %1$s</string>
+    <string name="detail_target_sdk_label">targetSdk: API %1$d</string>
+    <string name="detail_installed_label">installed: %1$s</string>
+    <string name="detail_updated_label">updated: %1$s</string>
     <string name="detail_system_app">System app</string>
+    <string name="detail_cleartext_traffic">Cleartext HTTP traffic allowed</string>
+    <string name="detail_trust_app">Trust this app</string>
+    <string name="detail_trusted_active">Trusted by you</string>
     <string name="detail_short_default">No suspicious activity detected</string>
     <string name="detail_open_in_system_settings">Open in system settings</string>
     <string name="detail_open_in_system_settings_failed">Could not open system settings for this app</string>
+    <string name="detail_share_report">Share report</string>
+    <string name="share_risk_label">Risk level</string>
+
+    <string name="detail_open_accessibility_settings">Accessibility settings</string>
+    <string name="detail_open_notification_settings">Notification access settings</string>
+    <string name="detail_open_device_admin_settings">Device admin settings</string>
+    <string name="detail_open_keyboard_settings">Keyboard settings</string>
+    <string name="detail_open_overlay_settings">Overlay permission settings</string>
+    <string name="detail_open_usage_settings">Usage access settings</string>
+    <string name="detail_open_install_settings">Install unknown apps settings</string>
+    <string name="detail_open_all_files_settings">All files access settings</string>
+    <string name="detail_open_write_settings">Modify system settings</string>
+
+    <string name="permission_granted">Granted</string>
+    <string name="permission_not_granted">Not granted</string>
+    <string name="permission_level_dangerous">Runtime (dangerous)</string>
+    <string name="permission_level_normal">Normal (install-time)</string>
+    <string name="permission_level_signature">Signature / system</string>
+    <string name="permission_level_other">Custom / vendor</string>
+    <string name="permission_no_description">This is a custom or vendor-specific permission with no system description on this device.</string>
 
     <!-- Settings -->
     <string name="settings_title">Settings</string>
@@ -79,6 +129,13 @@
     <string name="language_system">System default</string>
     <string name="language_russian">Русский</string>
     <string name="language_english">English</string>
+    <string name="updates_title">Updates</string>
+    <string name="updates_current_version">Installed version: %1$s</string>
+    <string name="updates_body">Squirrel Detective has no network permission by design. Check GitHub Releases manually, or track updates automatically with Obtainium.</string>
+    <string name="updates_open_github">Open GitHub Releases</string>
+    <string name="updates_add_obtainium">Add to Obtainium</string>
+    <string name="updates_open_url_failed">Could not open browser</string>
+    <string name="updates_obtainium_missing">Obtainium is not installed</string>
     <string name="about_title">About Squirrel Detective</string>
     <string name="about_body">Squirrel Detective is a fully offline Android auditor. It enumerates installed packages locally and highlights apps that may silently scan or report on others. No network calls, no analytics.</string>
 
@@ -152,13 +209,28 @@
     <string name="threat_no_launcher_short">Hidden app — no launcher icon</string>
     <string name="threat_no_launcher_full">The app does not declare a launcher activity, so it has no icon in the app drawer. Combined with sensitive permissions this is a typical pattern for stalkerware.</string>
 
+    <!-- Combos -->
+    <string name="combo_banking_2fa_title">Screen overlay + 2FA interception</string>
+    <string name="combo_banking_2fa_summary">Together, drawing over apps plus active Accessibility, Notification access, or SMS with internet lets an app show fake login windows and steal one-time banking codes.</string>
+    <string name="combo_silent_dropper_title">Silent app installation (dropper)</string>
+    <string name="combo_silent_dropper_summary">Internet access, APK installation permission, and an enabled Accessibility service together can download another APK and tap through the install prompt automatically.</string>
+    <string name="combo_stalkerware_title">Covert surveillance profile</string>
+    <string name="combo_stalkerware_summary">Combining sensors or tracking (location, mic, camera, usage) with hidden-app behavior, boot persistence, or background location is a strong stalkerware pattern.</string>
+    <string name="combo_uninstall_lock_title">Hard to remove (device lock)</string>
+    <string name="combo_uninstall_lock_summary">An active Device Admin combined with overlays or Accessibility can block access to settings and prevent you from uninstalling the app.</string>
+    <string name="combo_profiling_title">Deep user &amp; device profiling</string>
+    <string name="combo_profiling_summary">Full installed-apps visibility combined with device IDs, accounts, or location and internet access allows building a persistent cross-app profile of you.</string>
+
     <!-- Wiki -->
     <string name="wiki_title">Permission wiki</string>
     <string name="wiki_card_title">Permission wiki</string>
     <string name="wiki_card_body">Plain-language reference for what each Android permission actually grants. No need to google.</string>
     <string name="wiki_open">Open wiki</string>
     <string name="wiki_intro">A short, human reference for what each Android permission allows. Tap a category to expand.</string>
+    <string name="wiki_search_hint">Search permissions or topics</string>
+    <string name="wiki_no_results">No matching entries</string>
 
+    <string name="wiki_category_combos">Dangerous permission combinations</string>
     <string name="wiki_category_visibility">Observation &amp; monitoring</string>
     <string name="wiki_category_services">Powerful service binds</string>
     <string name="wiki_category_sensors">Sensors</string>
@@ -254,7 +326,30 @@
     <string name="wiki_wake_lock_title">WAKE_LOCK</string>
     <string name="wiki_wake_lock_body">Keeps the CPU or screen awake. Used by media players, alarms and downloads. Battery-relevant but not a privacy concern.</string>
 
+    <string name="wiki_body_sensors_title">BODY_SENSORS / ACTIVITY_RECOGNITION</string>
+    <string name="wiki_body_sensors_body">Reads biometric fitness sensors (heart rate) or physical activity (walking, driving). Expected for health and fitness trackers; unnecessary elsewhere.</string>
+
+    <string name="wiki_calendar_title">READ_CALENDAR / WRITE_CALENDAR</string>
+    <string name="wiki_calendar_body">Reads or edits calendar events, attendees, and locations. Can expose your daily schedule and contacts if combined with internet access.</string>
+
+    <string name="wiki_nearby_devices_title">BLUETOOTH_SCAN / NEARBY_WIFI_DEVICES</string>
+    <string name="wiki_nearby_devices_body">Finds and connects to nearby Bluetooth or Wi-Fi devices. Needed for headphones, wearables, and casting — can also infer location via nearby beacons.</string>
+
+    <string name="wiki_read_media_title">READ_MEDIA_IMAGES / VIDEO / AUDIO</string>
+    <string name="wiki_read_media_body">Android 13+ scoped access to your photo gallery, videos, or audio files. Safer than full storage access, but still exposes personal photos and metadata.</string>
+
+    <string name="wiki_battery_opt_title">REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</string>
+    <string name="wiki_battery_opt_body">Asks Android to exempt the app from Doze battery limits so it can stay active in the background. Useful for messengers and trackers; increases battery drain.</string>
+
+    <string name="wiki_exact_alarm_title">SCHEDULE_EXACT_ALARM / USE_EXACT_ALARM</string>
+    <string name="wiki_exact_alarm_body">Wakes the app at an exact time. Standard for alarm clocks, reminders, and calendar apps; rarely needed by general apps.</string>
+
+    <string name="wiki_full_screen_intent_title">USE_FULL_SCREEN_INTENT</string>
+    <string name="wiki_full_screen_intent_body">Allows high-priority full-screen alerts (incoming calls, alarms) even over the lock screen. Abused by aggressive adware to pop up full-screen ads.</string>
+
     <!-- Whitelist -->
+    <string name="whitelist_user_trusted_short">Trusted by you — risk downgraded</string>
+    <string name="whitelist_user_trusted_full">You marked this app as trusted. Its current findings are downgraded to Expected, but Squirrel Detective will still alert you in the changes banner if it gains new permissions or capabilities.</string>
     <string name="whitelist_launcher_short">Launcher — package list access expected</string>
     <string name="whitelist_launcher_full">This is a launcher. It must enumerate installed apps to draw the home screen, so QUERY_ALL_PACKAGES is normal in this context.</string>
     <string name="whitelist_store_short">App store — package access expected</string>
